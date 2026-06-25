@@ -18,6 +18,9 @@ import Chat from '@/pages/Chat';
 import ProfilePage from '@/pages/ProfilePage';
 import Premium from '@/pages/Premium';
 import Admin from '@/pages/Admin';
+import SafetyHub from '@/pages/SafetyHub';
+import Settings from '@/pages/Settings';
+import DateSafety from '@/pages/DateSafety';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -52,6 +55,9 @@ const AuthenticatedApp = () => {
           <Route path="/chat/:matchId" element={<Chat />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/premium" element={<Premium />} />
+          <Route path="/safety-hub" element={<SafetyHub />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/date-safety/:matchId" element={<DateSafety />} />
           <Route path="/admin" element={<Admin />} />
         </Route>
       </Route>

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import BottomNav from './BottomNav';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
-import { Heart, Compass, MessageCircle, User, Crown, Shield } from 'lucide-react';
+import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings } from 'lucide-react';
 
 export default function Layout() {
   const location = useLocation();
@@ -33,8 +33,10 @@ export default function Layout() {
     { to: '/discover', label: 'Discover', icon: Compass },
     { to: '/matches', label: 'Matches', icon: Heart },
     { to: '/messages', label: 'Messages', icon: MessageCircle },
+    { to: '/safety-hub', label: 'Safety Hub', icon: Shield },
     { to: '/premium', label: 'Premium', icon: Crown },
     { to: '/profile', label: 'Profile', icon: User },
+    { to: '/settings', label: 'Settings', icon: Settings },
   ];
 
   return (
@@ -42,7 +44,9 @@ export default function Layout() {
       {!hideNav && (
         <header className="hidden md:flex items-center justify-between px-6 py-3 border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-40">
           <Link to="/discover" className="flex items-center gap-2">
-            <Heart className="text-primary fill-primary" size={24} />
+            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+              <Heart className="text-primary-foreground fill-primary-foreground" size={16} />
+            </div>
             <span className="font-heading font-bold text-lg">Trust Matches</span>
           </Link>
           <nav className="flex items-center gap-1">
@@ -50,7 +54,7 @@ export default function Layout() {
               <Link
                 key={to}
                 to={to}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition ${
                   location.pathname === to
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-secondary'
@@ -63,7 +67,7 @@ export default function Layout() {
             {isAdmin && (
               <Link
                 to="/admin"
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition ${
                   location.pathname === '/admin'
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:bg-secondary'

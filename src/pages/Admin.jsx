@@ -120,7 +120,7 @@ export default function Admin() {
                           </h3>
                           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ${
                             report.status === 'pending' ? 'bg-accent/20 text-accent-foreground' :
-                            report.status === 'resolved' ? 'bg-green-100 text-green-700' :
+                            report.status === 'resolved' ? 'bg-teal/15 text-teal' :
                             'bg-secondary text-muted-foreground'
                           }`}>
                             {report.status}
@@ -136,7 +136,7 @@ export default function Admin() {
                           <div className="flex gap-2 mt-3">
                             <button
                               onClick={() => handleReportAction(report.id, 'resolved')}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-sm font-medium hover:bg-green-200 transition"
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-100 text-green-700 text-sm font-medium hover:bg-teal/25 transition"
                             >
                               <CheckCircle size={14} /> Resolve
                             </button>
@@ -182,7 +182,7 @@ export default function Admin() {
                   className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                     p.is_active
                       ? 'bg-destructive/10 text-destructive hover:bg-destructive/20'
-                      : 'bg-green-100 text-green-700 hover:bg-green-200'
+                      : 'bg-green-100 text-green-700 hover:bg-teal/25'
                   }`}
                 >
                   {p.is_active ? 'Suspend' : 'Reactivate'}

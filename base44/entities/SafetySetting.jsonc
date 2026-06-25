@@ -1,0 +1,52 @@
+{
+  "name": "SafetySetting",
+  "type": "object",
+  "properties": {
+    "show_distance": {
+      "type": "boolean",
+      "default": true
+    },
+    "read_receipts": {
+      "type": "boolean",
+      "default": true
+    },
+    "findable_by": {
+      "type": "string",
+      "enum": [
+        "everyone",
+        "matches_only",
+        "nobody"
+      ],
+      "default": "everyone"
+    },
+    "verified_only": {
+      "type": "boolean",
+      "default": false
+    },
+    "emergency_contact_name": {
+      "type": "string"
+    },
+    "emergency_contact_phone": {
+      "type": "string"
+    },
+    "safety_word": {
+      "type": "string"
+    },
+    "escalation_mode": {
+      "type": "string",
+      "enum": [
+        "notify_contact",
+        "show_999",
+        "both"
+      ],
+      "default": "notify_contact"
+    },
+    "audio_safety_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "username": {
+      "type": "string"
+    }
+  }
+}
