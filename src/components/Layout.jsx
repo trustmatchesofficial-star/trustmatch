@@ -1,6 +1,7 @@
 import { Outlet, useLocation, Navigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import BottomNav from './BottomNav';
+import GuidedWalkthrough from './GuidedWalkthrough';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings } from 'lucide-react';
@@ -84,6 +85,7 @@ export default function Layout() {
         <Outlet context={{ profile, setProfile }} />
       </main>
       {!hideNav && <BottomNav />}
+      <GuidedWalkthrough />
     </div>
   );
 }
