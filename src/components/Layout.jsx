@@ -1,0 +1,85 @@
+import { Outlet, useLocation, Navigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import BottomNav from './BottomNav';
+import { useAuth } from '@/lib/AuthContext';
+import { base44 } from '@/api/base44Client';
+import { Heart, Compass, MessageCircle, User, Crown, Shield } from 'lucide-react';
+
+export default function Layout() {
+  const location = useLocation();
+  const { user } = useAuth();
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) { setLoading(false); return; }
+    base44.entities.Profile.filter({ created_by_id: user.id })
+      .then((profiles) => { setProfile(profiles[0] || null); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [user]);
+
+  if (!user) return <Navigate to="/" replace />;
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
+    </div>
+  );
+  if (!profile || !profile.is_onboarded) return <Navigate to="/onboarding" replace />;
+
+  const hideNav = location.pathname.startsWith('/chat');
+  const isAdmin = user?.role === 'admin';
+
+  const navLinks = [
+    { to: '/discover', label: 'Discover', icon: Compass },
+    { to: '/matches', label: 'Matches', icon: Heart },
+    { to: '/messages', label: 'Messages', icon: MessageCircle },
+    { to: '/premium', label: 'Premium', icon: Crown },
+    { to: '/profile', label: 'Profile', icon: User },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      {!hideNav && (
+        <header className="hidden md:flex items-center justify-between px-6 py-3 border-b border-border bg-card/80 backdrop-blur-xl sticky top-0 z-40">
+          <Link to="/discover" className="flex items-center gap-2">
+            <Heart className="text-primary fill-primary" size={24} />
+            <span className="font-heading font-bold text-lg">Trust Matches</span>
+          </Link>
+          <nav className="flex items-center gap-1">
+            {navLinks.map(({ to, label, icon: Icon }) => (
+              <Link
+                key={to}
+                to={to}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition ${
+                  location.pathname === to
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-secondary'
+                }`}
+              >
+                <Icon size={16} />
+                {label}
+              </Link>
+            ))}
+            {isAdmin && (
+              <Link
+                to="/admin"
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition ${
+                  location.pathname === '/admin'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:bg-secondary'
+                }`}
+              >
+                <Shield size={16} />
+                Admin
+              </Link>
+            )}
+          </nav>
+        </header>
+      )}
+      <main className={`flex-1 ${hideNav ? '' : 'pb-20 md:pb-0'}`}>
+        <Outlet context={{ profile, setProfile }} />
+      </main>
+      {!hideNav && <BottomNav />}
+    </div>
+  );
+}

@@ -1,0 +1,25 @@
+{
+  "name": "Like",
+  "type": "object",
+  "properties": {
+    "liker_id": {
+      "type": "string"
+    },
+    "liked_id": {
+      "type": "string"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "like",
+        "pass"
+      ],
+      "default": "like"
+    }
+  },
+  "required": [
+    "liker_id",
+    "liked_id",
+    "action"
+  ]
+}

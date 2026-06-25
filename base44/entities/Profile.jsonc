@@ -1,0 +1,84 @@
+{
+  "name": "Profile",
+  "type": "object",
+  "properties": {
+    "full_name": {
+      "type": "string"
+    },
+    "age": {
+      "type": "number",
+      "minimum": 18
+    },
+    "gender": {
+      "type": "string",
+      "enum": [
+        "male",
+        "female",
+        "non-binary",
+        "other"
+      ]
+    },
+    "bio": {
+      "type": "string"
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "location": {
+      "type": "string"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "looking_for": {
+      "type": "string",
+      "enum": [
+        "serious_relationship",
+        "casual_dating",
+        "friendship",
+        "not_sure"
+      ]
+    },
+    "age_pref_min": {
+      "type": "number",
+      "default": 18
+    },
+    "age_pref_max": {
+      "type": "number",
+      "default": 99
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_premium": {
+      "type": "boolean",
+      "default": false
+    },
+    "credits": {
+      "type": "number",
+      "default": 0
+    },
+    "is_onboarded": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "full_name",
+    "age",
+    "gender",
+    "bio",
+    "location"
+  ]
+}

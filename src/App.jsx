@@ -6,12 +6,22 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import ScrollToTop from './components/ScrollToTop';
-// Add page imports here
+import ProtectedRoute from '@/components/ProtectedRoute';
+import Layout from '@/components/Layout';
+import Landing from '@/pages/Landing';
+import Onboarding from '@/pages/Onboarding';
+import Discover from '@/pages/Discover';
+import Browse from '@/pages/Browse';
+import Matches from '@/pages/Matches';
+import Messages from '@/pages/Messages';
+import Chat from '@/pages/Chat';
+import ProfilePage from '@/pages/ProfilePage';
+import Premium from '@/pages/Premium';
+import Admin from '@/pages/Admin';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
 
-  // Show loading spinner while checking app public settings or auth
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
       <div className="fixed inset-0 flex items-center justify-center">
@@ -20,21 +30,31 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Handle authentication errors
   if (authError) {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
     } else if (authError.type === 'auth_required') {
-      // Redirect to login automatically
       navigateToLogin();
       return null;
     }
   }
 
-  // Render the main app
   return (
     <Routes>
-      {/* Add your page Route elements here */}
+      <Route path="/" element={<Landing />} />
+      <Route element={<ProtectedRoute unauthenticatedElement={<Landing />} />}>
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route element={<Layout />}>
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/browse" element={<Browse />} />
+          <Route path="/matches" element={<Matches />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/chat/:matchId" element={<Chat />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/premium" element={<Premium />} />
+          <Route path="/admin" element={<Admin />} />
+        </Route>
+      </Route>
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
