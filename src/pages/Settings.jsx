@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User } from 'lucide-react';
+import VerificationModal from '@/components/VerificationModal';
 
 export default function Settings() {
-  const { profile } = useOutletContext();
+  const { profile, setProfile } = useOutletContext();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -119,10 +121,20 @@ export default function Settings() {
           <div className="bg-card rounded-2xl border border-border divide-y divide-border">
             <div className="flex items-center justify-between p-4">
               <span className="text-sm">Identity verification status</span>
-              <span className={`text-sm font-medium ${profile?.is_verified ? 'text-teal' : 'text-muted-foreground'}`}>
+              <span className={`text-sm font-medium flex items-center gap-1 ${profile?.is_verified ? 'text-teal' : 'text-muted-foreground'}`}>
+                {profile?.is_verified && <BadgeCheck size={16} />}
                 {profile?.is_verified ? 'Verified' : 'Not verified'}
               </span>
             </div>
+            {!profile?.is_verified && (
+              <button
+                onClick={() => setShowVerify(true)}
+                className="w-full flex items-center justify-between p-4 hover:bg-teal/5 transition border-t border-border"
+              >
+                <span className="text-sm font-medium text-teal">Get verified now</span>
+                <ChevronRight size={16} className="text-teal" />
+              </button>
+            )}
             <div className="p-4">
               <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Username</label>
               <div className="flex items-center gap-2">
@@ -192,6 +204,14 @@ export default function Settings() {
 
         {saving && <p className="text-center text-xs text-muted-foreground">Saving...</p>}
       </div>
+
+      {showVerify && (
+        <VerificationModal
+          profile={profile}
+          setProfile={setProfile}
+          onClose={() => setShowVerify(false)}
+        />
+      )}
     </div>
   );
 }

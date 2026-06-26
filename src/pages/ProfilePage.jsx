@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { MapPin, BadgeCheck, Heart, Edit3, Camera, X, Check, Crown } from 'lucide-react';
+import { MapPin, BadgeCheck, Heart, Edit3, Camera, X, Check, Crown, ShieldCheck } from 'lucide-react';
+import VerificationModal from '@/components/VerificationModal';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 
@@ -10,6 +11,7 @@ export default function ProfilePage() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
 
   useEffect(() => {
     if (profile) setForm({
@@ -97,12 +99,32 @@ export default function ProfilePage() {
 
         {/* Name & age */}
         <div className="mb-6">
-          <h2 className="text-2xl font-heading font-bold">{profile.full_name}, {profile.age}</h2>
+          <h2 className="text-2xl font-heading font-bold">
+            {profile.full_name}, {profile.age}
+            {profile.is_verified && <BadgeCheck size={22} className="text-teal inline ml-2 align-middle" />}
+          </h2>
           <div className="flex items-center gap-3 text-muted-foreground mt-1">
             {profile.location && <span className="flex items-center gap-1 text-sm"><MapPin size={14} /> {profile.location}</span>}
             <span className="text-sm capitalize">{profile.looking_for?.replace('_', ' ')}</span>
           </div>
         </div>
+
+        {/* Verification CTA */}
+        {!profile.is_verified && !editing && (
+          <button
+            onClick={() => setShowVerify(true)}
+            className="w-full flex items-center gap-3 bg-teal/10 border border-teal/30 rounded-2xl p-4 mb-6 hover:bg-teal/15 transition text-left"
+          >
+            <div className="w-10 h-10 rounded-xl bg-teal/20 flex items-center justify-center shrink-0">
+              <ShieldCheck size={22} className="text-teal" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-sm text-teal">Get Verified</h3>
+              <p className="text-xs text-muted-foreground">Confirm your identity to earn a verification badge and build trust.</p>
+            </div>
+            <Check size={18} className="text-teal" />
+          </button>
+        )}
 
         {/* Bio */}
         <div className="mb-6">
@@ -179,6 +201,14 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
+
+      {showVerify && (
+        <VerificationModal
+          profile={profile}
+          setProfile={setProfile}
+          onClose={() => setShowVerify(false)}
+        />
+      )}
     </div>
   );
 }
