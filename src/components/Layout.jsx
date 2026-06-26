@@ -2,6 +2,8 @@ import { Outlet, useLocation, Navigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import BottomNav from './BottomNav';
 import GuidedWalkthrough from './GuidedWalkthrough';
+import NotificationBell from './NotificationBell';
+import MatchCelebration from './MatchCelebration';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
 import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings } from 'lucide-react';
@@ -11,6 +13,7 @@ export default function Layout() {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [celebrationMatch, setCelebrationMatch] = useState(null);
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -18,6 +21,34 @@ export default function Layout() {
       .then((profiles) => { setProfile(profiles[0] || null); setLoading(false); })
       .catch(() => setLoading(false));
   }, [user]);
+
+  useEffect(() => {
+    if (!profile || celebrationMatch) return;
+    let active = true;
+    const checkNewMatches = async () => {
+      if (!active || celebrationMatch) return;
+      try {
+        const unread = await base44.entities.Notification.filter(
+          { user_id: profile.created_by_id, type: 'match', is_read: false },
+          '-created_date',
+          5
+        );
+        if (unread.length > 0 && active) {
+          const notif = unread[0];
+          await base44.entities.Notification.update(notif.id, { is_read: true });
+          if (notif.related_profile_id) {
+            const otherProfile = await base44.entities.Profile.get(notif.related_profile_id);
+            if (active) setCelebrationMatch(otherProfile);
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkNewMatches();
+    const interval = setInterval(checkNewMatches, 8000);
+    return () => { active = false; clearInterval(interval); };
+  }, [profile, celebrationMatch]);
 
   if (!user) return <Navigate to="/" replace />;
   if (loading) return (
@@ -78,6 +109,7 @@ export default function Layout() {
                 Admin
               </Link>
             )}
+            <NotificationBell profile={profile} />
           </nav>
         </header>
       )}
@@ -86,6 +118,7 @@ export default function Layout() {
       </main>
       {!hideNav && <BottomNav />}
       <GuidedWalkthrough />
+      <MatchCelebration match={celebrationMatch} onClose={() => setCelebrationMatch(null)} />
     </div>
   );
 }

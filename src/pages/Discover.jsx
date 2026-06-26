@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import SwipeCard from '@/components/SwipeCard';
 import MatchCelebration from '@/components/MatchCelebration';
+import NotificationBell from '@/components/NotificationBell';
 import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell } from 'lucide-react';
 
 export default function Discover() {
@@ -57,10 +58,28 @@ export default function Discover() {
           action: 'like',
         });
         if (mutual.length > 0) {
-          await base44.entities.Match.create({
+          const newMatch = await base44.entities.Match.create({
             user_a: profile.created_by_id,
             user_b: current.id,
             status: 'active',
+          });
+          await base44.entities.Notification.create({
+            user_id: current.created_by_id,
+            type: 'match',
+            title: `It's a match with ${profile.full_name}!`,
+            body: `You and ${profile.full_name} liked each other. Say hello!`,
+            match_id: newMatch.id,
+            related_profile_id: profile.id,
+            is_read: false,
+          });
+          await base44.entities.Notification.create({
+            user_id: profile.created_by_id,
+            type: 'match',
+            title: `It's a match with ${current.full_name}!`,
+            body: `You and ${current.full_name} liked each other. Say hello!`,
+            match_id: newMatch.id,
+            related_profile_id: current.id,
+            is_read: true,
           });
           setMatch(current);
         }
@@ -94,9 +113,7 @@ export default function Discover() {
               <h1 className="font-heading font-bold text-xl">Discover</h1>
             </div>
             <div className="flex items-center gap-2">
-              <button className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition">
-                <Bell size={18} />
-              </button>
+              <NotificationBell profile={profile} />
               <button onClick={() => setShowFilters(!showFilters)} className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition">
                 <SlidersHorizontal size={18} />
               </button>
