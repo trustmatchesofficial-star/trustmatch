@@ -78,7 +78,7 @@ export default function ProfilePage() {
         <div className="relative rounded-3xl overflow-hidden mb-6 aspect-[4/5]">
           <img src={editing ? form.photos?.[0] || photo : photo} alt={profile.full_name} className="w-full h-full object-cover" />
           {profile.is_verified && (
-            <div className="absolute top-4 right-4 flex items-center gap-1 bg-accent text-accent-foreground px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg">
+            <div className="absolute top-4 right-4 flex items-center gap-1 bg-teal text-accent-foreground px-3 py-1.5 rounded-full text-sm font-semibold shadow-lg">
               <BadgeCheck size={16} /> Verified
             </div>
           )}

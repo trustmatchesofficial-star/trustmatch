@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { BadgeCheck, Camera, Check, ShieldCheck, X, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { BadgeCheck, Camera, Check, ShieldCheck, X, ArrowRight, ArrowLeft, Loader2, Clock, XCircle } from 'lucide-react';
 
 const STEPS = [
   {
@@ -42,6 +42,19 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
   const [uploading, setUploading] = useState(false);
   const [agreed, setAgreed] = useState([false, false, false, false]);
   const [verifying, setVerifying] = useState(false);
+  const [existingRequest, setExistingRequest] = useState(null);
+  const [checking, setChecking] = useState(true);
+
+  useEffect(() => {
+    if (!profile) return;
+    base44.entities.VerificationRequest.filter({ user_id: profile.created_by_id })
+      .then((reqs) => {
+        const latest = reqs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date))[0];
+        setExistingRequest(latest || null);
+      })
+      .catch(() => setExistingRequest(null))
+      .finally(() => setChecking(false));
+  }, [profile]);
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -59,8 +72,12 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
   const handleVerify = async () => {
     setVerifying(true);
     try {
-      const updated = await base44.entities.Profile.update(profile.id, { is_verified: true });
-      setProfile(updated);
+      await base44.entities.VerificationRequest.create({
+        user_id: profile.created_by_id,
+        selfie_url: selfieUrl,
+        status: 'pending',
+      });
+      setExistingRequest({ status: 'pending' });
       onClose();
     } catch (err) {
       console.error(err);
@@ -80,6 +97,53 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
 
   const current = STEPS[step];
   const Icon = current.icon;
+
+  const pendingOrRejected = existingRequest && (existingRequest.status === 'pending' || existingRequest.status === 'rejected');
+
+  if (checking) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md">
+        <Loader2 className="text-muted-foreground animate-spin" size={32} />
+      </div>
+    );
+  }
+
+  if (pendingOrRejected) {
+    const isPending = existingRequest.status === 'pending';
+    const StatusIcon = isPending ? Clock : XCircle;
+    const statusColor = isPending ? 'text-gold' : 'text-destructive';
+    const statusBg = isPending ? 'bg-gold/15' : 'bg-destructive/15';
+    const statusTitle = isPending ? 'Verification Pending' : 'Verification Rejected';
+    const statusDesc = isPending
+      ? 'Your selfie is being reviewed by our team. You\u2019ll be notified once it\u2019s approved \u2014 this usually takes 24\u201348 hours.'
+      : 'Your verification was not approved. Please try again with a clearer, well-lit selfie that clearly shows your face.';
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in px-6">
+        <div className="relative w-full max-w-md bg-card border border-border rounded-3xl p-8 animate-slide-up shadow-2xl">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition"
+          >
+            <X size={18} />
+          </button>
+          <div className={`w-20 h-20 rounded-2xl ${statusBg} flex items-center justify-center mb-6 mx-auto`}>
+            <StatusIcon className={statusColor} size={40} />
+          </div>
+          <h2 className="text-2xl font-heading font-bold text-center mb-3">{statusTitle}</h2>
+          <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">{statusDesc}</p>
+          {!isPending && (
+            <button
+              onClick={() => { setExistingRequest(null); setStep(0); }}
+              className="w-full flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition"
+            >
+              <Camera size={16} /> Try Again
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in px-6">
