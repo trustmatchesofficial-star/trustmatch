@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User } from 'lucide-react';
+import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
+import DailyDigestButton from '@/components/DailyDigestButton';
 
 export default function Settings() {
   const { profile, setProfile } = useOutletContext();
@@ -26,6 +27,7 @@ export default function Settings() {
             verified_only: false,
             audio_safety_enabled: false,
             escalation_mode: 'notify_contact',
+            daily_digest_enabled: false,
             username: profile.full_name?.toLowerCase().replace(/\s+/g, ''),
           });
           setSettings(created);
@@ -109,6 +111,36 @@ export default function Settings() {
                 <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${settings.verified_only ? 'right-0.5' : 'left-0.5'}`} />
               </button>
             </div>
+          </div>
+        </div>
+
+        {/* Notifications */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Mail size={16} className="text-muted-foreground" />
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Notifications</h2>
+          </div>
+          <div className="bg-card rounded-2xl border border-border divide-y divide-border">
+            <div className="flex items-center justify-between p-4">
+              <div>
+                <span className="text-sm">Daily match digest</span>
+                <p className="text-xs text-muted-foreground mt-0.5">Get a daily email with your top potential matches</p>
+              </div>
+              <button
+                onClick={() => update('daily_digest_enabled', !settings.daily_digest_enabled)}
+                className={`w-10 h-5 rounded-full relative transition ${settings.daily_digest_enabled ? 'bg-primary' : 'bg-secondary'}`}
+              >
+                <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white transition-all ${settings.daily_digest_enabled ? 'right-0.5' : 'left-0.5'}`} />
+              </button>
+            </div>
+            {settings.daily_digest_enabled && (
+              <div className="px-4 pb-4">
+                <DailyDigestButton profile={profile} />
+                <p className="text-xs text-muted-foreground mt-2">
+                  We'll find your top 5 potential matches and email them to you instantly.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

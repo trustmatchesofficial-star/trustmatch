@@ -47,6 +47,11 @@
     },
     "username": {
       "type": "string"
+    },
+    "daily_digest_enabled": {
+      "type": "boolean",
+      "default": false
     }
-  }
+  },
+  "required": []
 }
