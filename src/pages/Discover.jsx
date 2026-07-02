@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import SwipeCard from '@/components/SwipeCard';
 import MatchCelebration from '@/components/MatchCelebration';
 import NotificationBell from '@/components/NotificationBell';
+import ReportModal from '@/components/ReportModal';
 import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell } from 'lucide-react';
 
 export default function Discover() {
@@ -17,6 +18,7 @@ export default function Discover() {
   const [showFilters, setShowFilters] = useState(false);
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(99);
+  const [reportTarget, setReportTarget] = useState(null);
 
   const loadProfiles = async () => {
     setLoading(true);
@@ -174,6 +176,7 @@ export default function Discover() {
                   profile={p}
                   isTop={i === arr.length - 1}
                   swipeDirection={i === arr.length - 1 ? swipeDirection : null}
+                  onReport={setReportTarget}
                 />
               ))}
             </div>
@@ -268,6 +271,11 @@ export default function Discover() {
       )}
 
       <MatchCelebration match={match} onClose={() => setMatch(null)} />
+      <ReportModal
+        reportedProfile={reportTarget}
+        reporterId={profile?.created_by_id}
+        onClose={() => setReportTarget(null)}
+      />
     </>
   );
 }

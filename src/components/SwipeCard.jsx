@@ -1,6 +1,6 @@
-import { BadgeCheck, MapPin, ShieldCheck, Camera, Info } from 'lucide-react';
+import { BadgeCheck, MapPin, ShieldCheck, Camera, Flag } from 'lucide-react';
 
-export default function SwipeCard({ profile, isTop, swipeDirection }) {
+export default function SwipeCard({ profile, isTop, swipeDirection, onReport }) {
   if (!profile) return null;
 
   const photo = profile.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800`;
@@ -49,7 +49,13 @@ export default function SwipeCard({ profile, isTop, swipeDirection }) {
         <div className="absolute bottom-0 inset-x-0 p-5 text-white">
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-2xl font-bold">{profile.full_name}, {profile.age}</h2>
-            <Info size={16} className="text-white/60" />
+            <button
+              onClick={(e) => { e.stopPropagation(); onReport?.(profile); }}
+              className="text-white/60 hover:text-destructive transition"
+              title="Report user"
+            >
+              <Flag size={16} />
+            </button>
           </div>
 
           {profile.location && (
