@@ -5,6 +5,7 @@ import SwipeCard from '@/components/SwipeCard';
 import MatchCelebration from '@/components/MatchCelebration';
 import NotificationBell from '@/components/NotificationBell';
 import ReportModal from '@/components/ReportModal';
+import BlockModal from '@/components/BlockModal';
 import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell } from 'lucide-react';
 
 export default function Discover() {
@@ -19,6 +20,7 @@ export default function Discover() {
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(99);
   const [reportTarget, setReportTarget] = useState(null);
+  const [blockTarget, setBlockTarget] = useState(null);
 
   const loadProfiles = async () => {
     setLoading(true);
@@ -26,9 +28,20 @@ export default function Discover() {
       const likes = await base44.entities.Like.filter({ liker_id: profile.created_by_id });
       const likedIds = likes.map((l) => l.liked_id);
 
+      const myBlocks = await base44.entities.Block.filter({ blocker_id: profile.created_by_id });
+      const blockedByMeIds = myBlocks.map((b) => b.blocked_id);
+      const blockedMe = await base44.entities.Block.filter({ blocked_id: profile.id });
+      const blockedMeUserIds = blockedMe.map((b) => b.blocker_id);
+
       const all = await base44.entities.Profile.list('-created_date', 50);
       const filtered = all.filter(
-        (p) => p.id !== profile.id && !likedIds.includes(p.id) && p.is_active && p.is_onboarded
+        (p) =>
+          p.id !== profile.id &&
+          !likedIds.includes(p.id) &&
+          !blockedByMeIds.includes(p.id) &&
+          !blockedMeUserIds.includes(p.created_by_id) &&
+          p.is_active &&
+          p.is_onboarded
       );
       setProfiles(filtered);
     } catch (err) {
@@ -177,6 +190,7 @@ export default function Discover() {
                   isTop={i === arr.length - 1}
                   swipeDirection={i === arr.length - 1 ? swipeDirection : null}
                   onReport={setReportTarget}
+                  onBlock={setBlockTarget}
                 />
               ))}
             </div>
@@ -275,6 +289,12 @@ export default function Discover() {
         reportedProfile={reportTarget}
         reporterId={profile?.created_by_id}
         onClose={() => setReportTarget(null)}
+      />
+      <BlockModal
+        blockedProfile={blockTarget}
+        blockerId={profile?.created_by_id}
+        onClose={() => setBlockTarget(null)}
+        onBlocked={loadProfiles}
       />
     </>
   );

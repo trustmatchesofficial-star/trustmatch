@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ReportModal from '@/components/ReportModal';
-import { Heart, MessageCircle, MapPin, BadgeCheck, Flag } from 'lucide-react';
+import BlockModal from '@/components/BlockModal';
+import { Heart, MessageCircle, MapPin, BadgeCheck, Flag, Ban } from 'lucide-react';
 
 export default function Matches() {
   const { profile } = useOutletContext();
@@ -10,6 +11,7 @@ export default function Matches() {
   const [profiles, setProfiles] = useState({});
   const [loading, setLoading] = useState(true);
   const [reportTarget, setReportTarget] = useState(null);
+  const [blockTarget, setBlockTarget] = useState(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -90,6 +92,12 @@ export default function Matches() {
                     >
                       <Flag size={14} />
                     </button>
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setBlockTarget(p); }}
+                      className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-md text-white p-1.5 rounded-full hover:bg-destructive transition z-10"
+                    >
+                      <Ban size={14} />
+                    </button>
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                       <div className="flex items-center gap-1">
                         <h3 className="text-white font-semibold text-sm">{p.full_name}, {p.age}</h3>
@@ -112,6 +120,11 @@ export default function Matches() {
         reportedProfile={reportTarget}
         reporterId={profile?.created_by_id}
         onClose={() => setReportTarget(null)}
+      />
+      <BlockModal
+        blockedProfile={blockTarget}
+        blockerId={profile?.created_by_id}
+        onClose={() => setBlockTarget(null)}
       />
     </div>
   );

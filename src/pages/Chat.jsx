@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import MessageBubble from '@/components/MessageBubble';
-import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban } from 'lucide-react';
+import BlockModal from '@/components/BlockModal';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -14,6 +15,9 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const [showMenu, setShowMenu] = useState(false);
+  const [isBlockedByMe, setIsBlockedByMe] = useState(false);
+  const [isBlockedByThem, setIsBlockedByThem] = useState(false);
+  const [blockTarget, setBlockTarget] = useState(null);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -27,6 +31,10 @@ export default function Chat() {
         setOtherProfile(p);
         const msgs = await base44.entities.Message.filter({ match_id: matchId });
         setMessages(msgs.sort((a, b) => new Date(a.created_date) - new Date(b.created_date)));
+        const myBlocks = await base44.entities.Block.filter({ blocker_id: profile.created_by_id, blocked_id: p.id });
+        const theirBlocks = await base44.entities.Block.filter({ blocker_id: p.created_by_id, blocked_id: profile.id });
+        setIsBlockedByMe(myBlocks.length > 0);
+        setIsBlockedByThem(theirBlocks.length > 0);
       } catch (err) {
         console.error(err);
       }
@@ -42,7 +50,7 @@ export default function Chat() {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || !match || !profile) return;
+    if (!input.trim() || !match || !profile || isBlockedByMe || isBlockedByThem) return;
     const content = input.trim();
     setInput('');
     try {
@@ -111,6 +119,9 @@ export default function Chat() {
               <button onClick={handleReport} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-secondary transition">
                 <Flag size={16} /> Report User
               </button>
+              <button onClick={() => { setBlockTarget(otherProfile); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-secondary transition">
+                <Ban size={16} /> Block User
+              </button>
             </div>
           )}
         </div>
@@ -132,24 +143,42 @@ export default function Chat() {
 
       {/* Input */}
       <div className="sticky bottom-0 bg-card/80 backdrop-blur-lg border-t border-border px-4 py-3 safe-bottom">
-        <div className="max-w-2xl mx-auto flex items-center gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-3 rounded-full border border-input bg-background focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition"
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim()}
-            className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 transition shrink-0"
-          >
-            <Send size={20} />
-          </button>
+        <div className="max-w-2xl mx-auto">
+          {isBlockedByMe ? (
+            <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
+              <Ban size={16} /> You blocked this user. Unblock to send messages.
+            </div>
+          ) : isBlockedByThem ? (
+            <div className="flex items-center justify-center gap-2 py-3 text-sm text-muted-foreground">
+              <Ban size={16} /> You can no longer message this user.
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                placeholder="Type a message..."
+                className="flex-1 px-4 py-3 rounded-full border border-input bg-background focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition"
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="w-12 h-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center disabled:opacity-40 hover:bg-primary/90 transition shrink-0"
+              >
+                <Send size={20} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
+      <BlockModal
+        blockedProfile={blockTarget}
+        blockerId={profile?.created_by_id}
+        onClose={() => setBlockTarget(null)}
+        onBlocked={() => setIsBlockedByMe(true)}
+      />
     </div>
   );
 }
