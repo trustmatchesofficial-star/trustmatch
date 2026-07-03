@@ -13,32 +13,47 @@ export default function Matches() {
   const [reportTarget, setReportTarget] = useState(null);
   const [blockTarget, setBlockTarget] = useState(null);
 
-  useEffect(() => {
+  const loadMatches = async () => {
     if (!profile) return;
-    const load = async () => {
-      setLoading(true);
-      try {
-        const all = await base44.entities.Match.list('-created_date', 50);
-        const mine = all.filter(
-          (m) => m.status === 'active' && (m.user_a === profile.created_by_id || m.user_b === profile.created_by_id)
-        );
-        setMatches(mine);
+    setLoading(true);
+    try {
+      const all = await base44.entities.Match.list('-created_date', 50);
+      let mine = all.filter(
+        (m) => m.status === 'active' && (m.user_a === profile.created_by_id || m.user_b === profile.created_by_id)
+      );
 
-        const otherIds = mine.map((m) => (m.user_a === profile.created_by_id ? m.user_b : m.user_a));
-        const profileMap = {};
-        for (const id of [...new Set(otherIds)]) {
-          try {
-            const p = await base44.entities.Profile.get(id);
-            profileMap[id] = p;
-          } catch (e) {}
-        }
-        setProfiles(profileMap);
-      } catch (err) {
-        console.error(err);
+      const myBlocks = await base44.entities.Block.filter({ blocker_id: profile.created_by_id });
+      const blockedByMeIds = myBlocks.map((b) => b.blocked_id);
+      const blockedMe = await base44.entities.Block.filter({ blocked_id: profile.id });
+      const blockedMeUserIds = blockedMe.map((b) => b.blocker_id);
+
+      const otherIds = mine.map((m) => (m.user_a === profile.created_by_id ? m.user_b : m.user_a));
+      const profileMap = {};
+      for (const id of [...new Set(otherIds)]) {
+        try {
+          const p = await base44.entities.Profile.get(id);
+          profileMap[id] = p;
+        } catch (e) {}
       }
-      setLoading(false);
-    };
-    load();
+
+      mine = mine.filter((m) => {
+        const otherId = m.user_a === profile.created_by_id ? m.user_b : m.user_a;
+        const op = profileMap[otherId];
+        if (blockedByMeIds.includes(otherId)) return false;
+        if (op && blockedMeUserIds.includes(op.created_by_id)) return false;
+        return true;
+      });
+
+      setMatches(mine);
+      setProfiles(profileMap);
+    } catch (err) {
+      console.error(err);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadMatches();
   }, [profile]);
 
   if (loading) return (
@@ -125,6 +140,7 @@ export default function Matches() {
         blockedProfile={blockTarget}
         blockerId={profile?.created_by_id}
         onClose={() => setBlockTarget(null)}
+        onBlocked={loadMatches}
       />
     </div>
   );
