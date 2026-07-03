@@ -57,6 +57,10 @@
       "type": "boolean",
       "default": false
     },
+    "is_live_verified": {
+      "type": "boolean",
+      "default": false
+    },
     "is_premium": {
       "type": "boolean",
       "default": false

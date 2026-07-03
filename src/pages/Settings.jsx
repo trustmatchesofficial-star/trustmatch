@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail } from 'lucide-react';
+import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail, Video } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
+import LiveVideoVerification from '@/components/LiveVideoVerification';
 import DailyDigestButton from '@/components/DailyDigestButton';
 
 export default function Settings() {
@@ -11,6 +12,7 @@ export default function Settings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
+  const [showLive, setShowLive] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -165,6 +167,17 @@ export default function Settings() {
                 {profile?.is_verified ? 'Verified' : 'Not verified'}
               </span>
             </div>
+            <button onClick={() => setShowLive(true)} className="w-full flex items-center justify-between p-4 hover:bg-purplecustom/5 transition">
+              <div className="flex items-center gap-2">
+                <Video size={16} className="text-purplecustom" />
+                <span className="text-sm font-medium text-purplecustom">Live video verification</span>
+              </div>
+              <span className="flex items-center gap-1.5 text-sm">
+                {profile?.is_live_verified
+                  ? <><BadgeCheck size={16} className="text-purplecustom" /> <span className="text-purplecustom">Verified</span></>
+                  : <ChevronRight size={16} className="text-muted-foreground" />}
+              </span>
+            </button>
             {!profile?.is_verified && (
               <button
                 onClick={() => setShowVerify(true)}
@@ -249,6 +262,13 @@ export default function Settings() {
           profile={profile}
           setProfile={setProfile}
           onClose={() => setShowVerify(false)}
+        />
+      )}
+      {showLive && (
+        <LiveVideoVerification
+          profile={profile}
+          setProfile={setProfile}
+          onClose={() => setShowLive(false)}
         />
       )}
     </div>
