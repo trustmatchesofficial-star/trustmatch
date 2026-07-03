@@ -30,6 +30,13 @@ const STEPS = [
     description: 'Upload a photo of a government-issued ID (passport, driving licence, or ID card). We verify your age and identity. You may cover sensitive details except your photo, name, and date of birth.',
   },
   {
+    title: 'ID Document',
+    icon: IdCard,
+    color: 'text-primary',
+    bg: 'bg-primary/15',
+    description: 'Upload a clear photo of your passport or ID card. This is used by our automated verification system to confirm your identity. You may cover sensitive details except your photo, name, and date of birth.',
+  },
+  {
     title: 'Community Guidelines',
     icon: Check,
     color: 'text-teal',
@@ -47,6 +54,7 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
   const [step, setStep] = useState(0);
   const [selfieUrl, setSelfieUrl] = useState(null);
   const [idPhotoUrl, setIdPhotoUrl] = useState(null);
+  const [idDocumentUrl, setIdDocumentUrl] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [agreed, setAgreed] = useState([false, false, false, false]);
   const [verifying, setVerifying] = useState(false);
@@ -84,6 +92,7 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
         user_id: profile.created_by_id,
         selfie_url: selfieUrl,
         id_photo_url: idPhotoUrl,
+        id_document_url: idDocumentUrl,
         status: 'pending',
       });
       setExistingRequest({ status: 'pending' });
@@ -101,7 +110,8 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
     step === 0 ||
     (step === 1 && selfieUrl) ||
     (step === 2 && idPhotoUrl) ||
-    (step === 3 && allAgreed);
+    (step === 3 && idDocumentUrl) ||
+    (step === 4 && allAgreed);
 
   const current = STEPS[step];
   const Icon = current.icon;
@@ -138,7 +148,7 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
           <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">{statusDesc}</p>
           {!isPending && (
             <button
-              onClick={() => { setExistingRequest(null); setStep(0); setSelfieUrl(null); setIdPhotoUrl(null); }}
+              onClick={() => { setExistingRequest(null); setStep(0); setSelfieUrl(null); setIdPhotoUrl(null); setIdDocumentUrl(null); }}
               className="w-full flex items-center justify-center gap-1.5 px-5 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition"
             >
               <Camera size={16} /> Try Again
@@ -203,8 +213,9 @@ export default function VerificationModal({ profile, setProfile, onClose }) {
 
         {step === 1 && renderUpload(selfieUrl, setSelfieUrl, 'Selfie')}
         {step === 2 && renderUpload(idPhotoUrl, setIdPhotoUrl, 'ID')}
+        {step === 3 && renderUpload(idDocumentUrl, setIdDocumentUrl, 'ID Document')}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="space-y-3 mb-8">
             {current.guidelines.map((g, i) => (
               <button key={g} onClick={() => toggleAgree(i)} className="w-full flex items-center gap-3 text-left p-3 rounded-xl border border-border hover:border-teal/40 transition">

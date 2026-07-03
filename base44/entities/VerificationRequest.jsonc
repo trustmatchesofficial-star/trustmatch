@@ -11,13 +11,19 @@
     "id_photo_url": {
       "type": "string"
     },
+    "id_document_url": {
+      "type": "string",
+      "description": "Photo of passport/ID document submitted during verification."
+    },
     "status": {
       "type": "string",
       "enum": [
         "pending",
         "reviewing",
         "approved",
-        "rejected"
+        "rejected",
+        "pending_review",
+        "flagged_fraud"
       ],
       "default": "pending"
     },
@@ -33,32 +39,5 @@
     "user_id",
     "selfie_url",
     "status"
-  ],
-  "rls": {
-    "create": {
-      "created_by_id": "{{user.id}}"
-    },
-    "read": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
-    "update": {
-      "user_condition": {
-        "role": "admin"
-      }
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  ]
 }

@@ -162,6 +162,7 @@ export default function Admin() {
 
   const pendingReports = reports.filter((r) => r.status === 'pending');
   const pendingVerifications = verifications.filter((v) => v.status === 'pending');
+  const fraudFlaggedVerifications = verifications.filter((v) => v.status === 'flagged_fraud');
   const pendingAlerts = safetyAlerts.filter((a) => a.status === 'pending_review');
   const disputedAlerts = safetyAlerts.filter((a) => a.dispute_status === 'disputed');
   const flaggedReports = reports.filter((r) => r.message_id || r.reason === 'scam' || r.reason === 'safety_concern');
@@ -169,7 +170,7 @@ export default function Admin() {
 
   const tabs = [
     { key: 'reports', label: 'Reports', count: pendingReports.length, icon: Flag },
-    { key: 'verifications', label: 'Verifications', count: pendingVerifications.length, icon: BadgeCheck },
+    { key: 'verifications', label: 'Verifications', count: pendingVerifications.length + fraudFlaggedVerifications.length, icon: BadgeCheck },
     { key: 'alerts', label: 'Safety Alerts', count: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
     { key: 'flagged', label: 'Flagged Messages', count: flaggedReports.length, icon: MessageSquareWarning },
     { key: 'users', label: 'Users', count: null, icon: Users },
@@ -185,8 +186,21 @@ export default function Admin() {
       approved: 'bg-teal/15 text-teal',
       rejected: 'bg-destructive/15 text-destructive',
       removed: 'bg-destructive/15 text-destructive',
+      pending_review: 'bg-gold/20 text-gold',
+      flagged_fraud: 'bg-destructive/20 text-destructive',
     };
     return map[status] || 'bg-secondary text-muted-foreground';
+  };
+
+  const getFilteredVerifications = () => {
+    let filtered = verifications;
+    if (filterMode === 'flagged') filtered = verifications.filter((v) => v.status === 'reviewing' || v.status === 'pending_review' || v.status === 'flagged_fraud');
+    else if (filterMode === 'pending') filtered = verifications.filter((v) => v.status === 'pending');
+    return [...filtered].sort((a, b) => {
+      if (a.status === 'flagged_fraud' && b.status !== 'flagged_fraud') return -1;
+      if (b.status === 'flagged_fraud' && a.status !== 'flagged_fraud') return 1;
+      return 0;
+    });
   };
 
   const renderReport = (report) => {
@@ -263,7 +277,7 @@ export default function Admin() {
           {[
             { label: 'Total Users', value: profiles.length, icon: Users },
             { label: 'Open Reports', value: pendingReports.length, icon: Flag },
-            { label: 'Verifications', value: pendingVerifications.length, icon: BadgeCheck },
+            { label: 'Verifications', value: pendingVerifications.length + fraudFlaggedVerifications.length, icon: BadgeCheck },
             { label: 'Safety Alerts', value: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
             { label: 'Flagged Msgs', value: flaggedReports.length, icon: MessageSquareWarning },
           ].map(({ label, value, icon: Icon }) => (
@@ -324,16 +338,16 @@ export default function Admin() {
                 <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m === 'flagged' ? 'Flagged' : m}</button>
               ))}
             </div>
-            {(filterMode === 'all' ? verifications : filterMode === 'flagged' ? verifications.filter((v) => v.status === 'reviewing') : verifications.filter((v) => v.status === 'pending')).length === 0 ? (
+            {getFilteredVerifications().length === 0 ? (
               <div className="text-center py-16">
                 <BadgeCheck className="text-muted-foreground mx-auto mb-3" size={36} />
                 <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No verification requests.' : 'No pending verifications. All caught up!'}</p>
               </div>
             ) : (
-              (filterMode === 'all' ? verifications : filterMode === 'flagged' ? verifications.filter((v) => v.status === 'reviewing') : verifications.filter((v) => v.status === 'pending')).map((req) => {
+              getFilteredVerifications().map((req) => {
                 const userProfile = profiles.find((p) => p.created_by_id === req.user_id);
                 return (
-                  <div key={req.id} className="bg-card rounded-2xl border border-border p-4">
+                  <div key={req.id} className={`bg-card rounded-2xl border p-4 ${req.status === 'flagged_fraud' ? 'border-destructive/50 bg-destructive/5 ring-1 ring-destructive/30' : 'border-border'}`}>
                     <div className="flex items-start gap-4">
                       <div className="flex gap-2 shrink-0">
                         <img
@@ -354,6 +368,14 @@ export default function Admin() {
                             <IdCard className="text-muted-foreground" size={24} />
                           </div>
                         )}
+                        {req.id_document_url && (
+                          <img
+                            src={req.id_document_url}
+                            alt="ID Document"
+                            onClick={() => setSelectedImage(req.id_document_url)}
+                            className="w-20 h-20 rounded-2xl object-cover cursor-pointer hover:opacity-80 transition border border-gold/40"
+                          />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2 mb-1">
@@ -361,6 +383,9 @@ export default function Admin() {
                             {userProfile?.full_name || 'Unknown user'}
                             {userProfile?.is_verified && <BadgeCheck size={16} className="text-teal" />}
                           </h3>
+                          {req.status === 'flagged_fraud' && (
+                            <span className="text-[10px] font-bold text-destructive-foreground bg-destructive px-2 py-0.5 rounded-full shrink-0 animate-pulse">⚠ FRAUD</span>
+                          )}
                           <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ${statusBadge(req.status)}`}>
                             {req.status}
                           </span>
@@ -376,7 +401,7 @@ export default function Admin() {
                           </div>
                         )}
                         {req.review_note && <p className="text-sm text-muted-foreground mb-2">Note: {req.review_note}</p>}
-                        {(req.status === 'pending' || req.status === 'reviewing') && (
+                        {(req.status === 'pending' || req.status === 'reviewing' || req.status === 'pending_review' || req.status === 'flagged_fraud') && (
                           <>
                             <input
                               type="text"
