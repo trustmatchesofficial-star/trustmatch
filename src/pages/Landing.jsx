@@ -32,6 +32,11 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <LandingHeader />
+      <img
+        src="https://media.base44.com/images/public/6a3ebc375433828e3faa9c58/88676525f_IMG_7751.jpg"
+        alt="Trust Matches — Real People. Real Connections. Built on Trust. Verified Identities, Privacy First, Date Safety Mode, Shared Experiences."
+        className="w-full h-auto"
+      />
       <LandingHero />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />

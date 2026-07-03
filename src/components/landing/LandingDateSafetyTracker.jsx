@@ -10,6 +10,13 @@ const howItWorks = [
 export default function LandingDateSafetyTracker() {
   return (
     <section id="safety" className="py-20 px-6 bg-background">
+      <div className="max-w-6xl mx-auto mb-12">
+        <img
+          src="https://media.base44.com/images/public/6a3ebc375433828e3faa9c58/8d88c8f12_IMG_7752.jpg"
+          alt="Date Safety Tracker — share your live location during a date, visible only to you both, with full control to turn it off anytime."
+          className="w-full h-auto rounded-3xl border border-border shadow-xl"
+        />
+      </div>
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
         {/* Left: Content */}
         <div>
