@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import ReportModal from '@/components/ReportModal';
 import BlockModal from '@/components/BlockModal';
 import { Heart, MessageCircle, MapPin, BadgeCheck, Flag, Ban, ShieldCheck } from 'lucide-react';
+import TrustScoreBadge from '@/components/TrustScoreBadge';
 
 export default function Matches() {
   const { profile } = useOutletContext();
@@ -113,7 +114,10 @@ export default function Matches() {
                     >
                       <Ban size={14} />
                     </button>
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                      <div className="mb-1">
+                        <TrustScoreBadge profile={p} size="sm" />
+                      </div>
                       <div className="flex items-center gap-1">
                         <h3 className="text-white font-semibold text-sm">{p.full_name}, {p.age}</h3>
                         {p.is_verified && (

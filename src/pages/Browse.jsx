@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Search, MapPin, BadgeCheck, SlidersHorizontal, Heart, Flag } from 'lucide-react';
 import ReportModal from '@/components/ReportModal';
+import TrustScoreBadge from '@/components/TrustScoreBadge';
 
 export default function Browse() {
   const { profile } = useOutletContext();
@@ -116,7 +117,10 @@ export default function Browse() {
                     >
                       <Flag size={14} />
                     </button>
-                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-3">
+                    <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-3">
+                      <div className="flex items-center gap-1 mb-1">
+                        <TrustScoreBadge profile={p} size="sm" />
+                      </div>
                       <h3 className="text-white font-semibold text-sm">
                         {p.full_name}, {p.age}
                       </h3>
