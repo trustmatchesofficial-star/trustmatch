@@ -105,8 +105,8 @@ export default function Browse() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     {p.is_verified && (
-                      <div className="absolute top-2 right-2 bg-accent/90 text-accent-foreground p-1 rounded-full">
-                        <BadgeCheck size={16} />
+                      <div className="absolute top-2 right-2 flex items-center gap-1 bg-gold/90 text-background px-2 py-1 rounded-full text-[10px] font-semibold shadow-lg">
+                        <BadgeCheck size={12} /> Verified
                       </div>
                     )}
                     <button
