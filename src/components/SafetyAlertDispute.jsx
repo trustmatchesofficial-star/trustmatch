@@ -59,7 +59,7 @@ export default function SafetyAlertDispute({ userId, onClose }) {
       setDisputeNote('');
     } catch (err) {
       console.error(err);
-      setError('Failed to submit dispute. Please try again.');
+      setError(err?.message || 'Failed to submit dispute. Please try again.');
     }
     setDisputing(null);
   };

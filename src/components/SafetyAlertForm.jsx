@@ -73,8 +73,20 @@ export default function SafetyAlertForm({ reporterId, onClose, onSubmitted }) {
 
     setSubmitting(true);
     try {
+      // Look up the subject's profile by name so disputes can be authorized
+      // via an immutable profile ID rather than a mutable name
+      let subjectProfileId;
+      try {
+        const allProfiles = await base44.entities.Profile.list('-created_date', 200);
+        const match = allProfiles.find(
+          (p) => p.full_name && p.full_name.trim().toLowerCase() === subjectName.trim().toLowerCase()
+        );
+        if (match) subjectProfileId = match.id;
+      } catch (e) {}
+
       await base44.entities.SafetyAlert.create({
         reporter_id: reporterId,
+        subject_profile_id: subjectProfileId || undefined,
         subject_full_name: subjectName.trim(),
         subject_phone_or_social_handle: subjectPhone.trim() || undefined,
         subject_photo_url: subjectPhotoUrl || undefined,

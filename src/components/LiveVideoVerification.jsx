@@ -61,7 +61,6 @@ export default function LiveVideoVerification({ profile, setProfile, onClose }) 
       setVerifying(true);
       const response = await base44.functions.invoke('completeLiveVerification', {
         live_photo_url: liveUrl,
-        profile_photo_urls: profilePhotos,
       });
       const data = response.data;
       const match = data?.match === true;
