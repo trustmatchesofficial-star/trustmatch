@@ -78,19 +78,21 @@ export default function Admin() {
   const handleReportAction = async (report, action) => {
     try {
       const reportedProfile = profiles.find((p) => p.id === report.reported_id);
+      const note = notes[report.id] || undefined;
       if (action === 'flag') {
-        await base44.entities.Report.update(report.id, { status: 'reviewing' });
+        await base44.entities.Report.update(report.id, { status: 'reviewing', review_note: note });
       } else if (action === 'dismiss') {
-        await base44.entities.Report.update(report.id, { status: 'dismissed', action_taken: 'none' });
+        await base44.entities.Report.update(report.id, { status: 'dismissed', action_taken: 'none', review_note: note });
       } else if (action === 'warn') {
-        await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'warned' });
+        await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'warned', review_note: note });
       } else if (action === 'suspend' && reportedProfile) {
-        await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'suspended' });
+        await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'suspended', review_note: note });
         await base44.entities.Profile.update(reportedProfile.id, { account_status: 'suspended', is_active: false, trust_score: 20 });
       } else if (action === 'ban' && reportedProfile) {
-        await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'banned' });
+        await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'banned', review_note: note });
         await base44.entities.Profile.update(reportedProfile.id, { account_status: 'banned', is_active: false, trust_score: 5 });
       }
+      setNotes((n) => { const next = { ...n }; delete next[report.id]; return next; });
       loadData();
     } catch (err) { console.error(err); }
   };
@@ -240,16 +242,43 @@ export default function Admin() {
               </div>
             )}
             {(report.status === 'pending' || report.status === 'reviewing') && (
+              <>
+                <input
+                  type="text"
+                  value={notes[report.id] || ''}
+                  onChange={(e) => setNotes((n) => ({ ...n, [report.id]: e.target.value }))}
+                  placeholder="Moderation note (optional)"
+                  className="w-full mt-3 mb-2 px-3 py-2 rounded-lg border border-input bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <button onClick={() => handleReportAction(report, 'ban')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition">
+                    <Ban size={14} /> Ban User
+                  </button>
+                  <button onClick={() => handleReportAction(report, 'suspend')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-semibold hover:bg-gold/25 transition">
+                    <UserX size={14} /> Suspend
+                  </button>
+                  <button onClick={() => handleReportAction(report, 'warn')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/15 text-accent-foreground text-sm font-semibold hover:bg-accent/25 transition">
+                    <AlertTriangle size={14} /> Warn
+                  </button>
+                  <button onClick={() => handleReportAction(report, 'flag')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                    <Clock size={14} /> Flag for Review
+                  </button>
+                  <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                    <XCircle size={14} /> Dismiss
+                  </button>
+                </div>
+              </>
+            )}
+            {report.status === 'resolved' && (
               <div className="flex flex-wrap gap-2 mt-3">
-                <button onClick={() => handleReportAction(report, 'suspend')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition">
-                  <CheckCircle size={14} /> Approve
+                <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:bg-muted transition">
+                  <XCircle size={14} /> Reopen / Dismiss
                 </button>
-                <button onClick={() => handleReportAction(report, 'flag')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-semibold hover:bg-gold/25 transition">
-                  <AlertTriangle size={14} /> Flag for investigation
-                </button>
-                <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
-                  <XCircle size={14} /> Reject
-                </button>
+                {reportedProfile && (
+                  <button onClick={() => handleUserStatus(reportedProfile.id, 'active')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal/15 text-teal text-sm font-medium hover:bg-teal/25 transition">
+                    <UserCheck size={14} /> Reactivate User
+                  </button>
+                )}
               </div>
             )}
           </div>
