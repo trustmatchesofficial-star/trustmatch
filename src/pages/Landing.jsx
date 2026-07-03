@@ -29,7 +29,7 @@ export default function Landing() {
   if (user && !isLoadingAuth) return <Navigate to="/onboarding" replace />;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       <LandingHeader />
       <LandingHero />
       <LandingFeatures />

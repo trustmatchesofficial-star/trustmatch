@@ -18,30 +18,30 @@ const faqs = [
 
 export default function LandingFAQ() {
   return (
-    <section id="faq" className="py-20 px-6 bg-white">
+    <section id="faq" className="py-20 px-6 bg-background">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-12">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">FAQ</p>
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-slate-900">Questions, answered</h2>
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground">Questions, answered</h2>
         </div>
         <div className="grid md:grid-cols-2 gap-x-8">
           <Accordion type="single" collapsible className="w-full">
             {faqs.slice(0, 4).map((f, i) => (
               <AccordionItem key={i} value={`a-${i}`}>
-                <AccordionTrigger className="text-left text-slate-900 font-medium hover:no-underline">
+                <AccordionTrigger className="text-left text-foreground font-medium hover:no-underline">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-slate-600 text-sm leading-relaxed">{f.a}</AccordionContent>
+                <AccordionContent className="text-muted-foreground text-sm leading-relaxed">{f.a}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
           <Accordion type="single" collapsible className="w-full">
             {faqs.slice(4).map((f, i) => (
               <AccordionItem key={i} value={`b-${i}`}>
-                <AccordionTrigger className="text-left text-slate-900 font-medium hover:no-underline">
+                <AccordionTrigger className="text-left text-foreground font-medium hover:no-underline">
                   {f.q}
                 </AccordionTrigger>
-                <AccordionContent className="text-slate-600 text-sm leading-relaxed">{f.a}</AccordionContent>
+                <AccordionContent className="text-muted-foreground text-sm leading-relaxed">{f.a}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>

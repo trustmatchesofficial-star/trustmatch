@@ -26,28 +26,28 @@ const testimonials = [
 
 export default function LandingTestimonials() {
   return (
-    <section id="testimonials" className="py-20 px-6 bg-gradient-to-b from-pink-50/40 to-white">
+    <section id="testimonials" className="py-20 px-6 bg-background">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-14">
           <p className="text-sm font-semibold text-primary uppercase tracking-wider mb-2">Testimonials</p>
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-slate-900 text-balance">
+          <h2 className="text-3xl md:text-4xl font-heading font-bold text-foreground text-balance">
             Loved by our early members
           </h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {testimonials.map((t) => (
-            <div key={t.name} className="bg-white rounded-2xl p-6 border border-slate-200/70 shadow-sm">
+            <div key={t.name} className="bg-card rounded-2xl p-6 border border-border shadow-sm">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={16} className="text-amber-400 fill-amber-400" />
+                  <Star key={i} size={16} className="text-gold fill-gold" />
                 ))}
               </div>
-              <p className="text-slate-700 text-sm leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</p>
+              <p className="text-foreground/80 text-sm leading-relaxed mb-5">&ldquo;{t.quote}&rdquo;</p>
               <div className="flex items-center gap-3">
                 <img src={t.avatar} alt={t.name} className="w-10 h-10 rounded-full object-cover" />
                 <div>
-                  <p className="font-semibold text-sm text-slate-900">{t.name}</p>
-                  <p className="text-xs text-slate-500">{t.location}</p>
+                  <p className="font-semibold text-sm text-foreground">{t.name}</p>
+                  <p className="text-xs text-muted-foreground">{t.location}</p>
                 </div>
               </div>
             </div>
