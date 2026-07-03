@@ -2,6 +2,7 @@ import { Outlet, useLocation, Navigate, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import BottomNav from './BottomNav';
 import GuidedWalkthrough from './GuidedWalkthrough';
+import SafetySetupWalkthrough from './SafetySetupWalkthrough';
 import NotificationBell from './NotificationBell';
 import MatchCelebration from './MatchCelebration';
 import { useAuth } from '@/lib/AuthContext';
@@ -117,6 +118,7 @@ export default function Layout() {
         <Outlet context={{ profile, setProfile }} />
       </main>
       {!hideNav && <BottomNav />}
+      <SafetySetupWalkthrough profile={profile} />
       <GuidedWalkthrough />
       <MatchCelebration match={celebrationMatch} onClose={() => setCelebrationMatch(null)} />
     </div>

@@ -62,7 +62,8 @@ export default function GuidedWalkthrough() {
 
   useEffect(() => {
     try {
-      if (!localStorage.getItem(STORAGE_KEY)) setVisible(true);
+      // Wait until the safety setup walkthrough is done before showing the general tour
+      if (localStorage.getItem('tm_safety_walkthrough_done') && !localStorage.getItem(STORAGE_KEY)) setVisible(true);
     } catch {
       setVisible(true);
     }
