@@ -17,6 +17,7 @@ export default function Admin() {
   const [tab, setTab] = useState('reports');
   const [selectedImage, setSelectedImage] = useState(null);
   const [notes, setNotes] = useState({});
+  const [showAll, setShowAll] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -158,17 +159,11 @@ export default function Admin() {
             )}
             {report.status === 'pending' && (
               <div className="flex flex-wrap gap-2 mt-3">
-                <button onClick={() => handleReportAction(report, 'warn')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-medium hover:bg-gold/25 transition">
-                  <AlertTriangle size={14} /> Warn
+                <button onClick={() => handleReportAction(report, 'suspend')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition">
+                  <CheckCircle size={14} /> Approve
                 </button>
-                <button onClick={() => handleReportAction(report, 'suspend')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/20 text-accent-foreground text-sm font-medium hover:bg-accent/30 transition">
-                  <UserX size={14} /> Suspend
-                </button>
-                <button onClick={() => handleReportAction(report, 'ban')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/15 text-destructive text-sm font-medium hover:bg-destructive/25 transition">
-                  <Ban size={14} /> Ban
-                </button>
-                <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:bg-muted transition">
-                  <XCircle size={14} /> Dismiss
+                <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                  <XCircle size={14} /> Reject
                 </button>
               </div>
             )}
@@ -234,13 +229,17 @@ export default function Admin() {
         {/* Reports */}
         {tab === 'reports' && (
           <div className="space-y-3">
-            {reports.length === 0 ? (
+            <div className="flex items-center justify-end gap-2">
+              <button onClick={() => setShowAll(false)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${!showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Pending</button>
+              <button onClick={() => setShowAll(true)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>All</button>
+            </div>
+            {(showAll ? reports : reports.filter((r) => r.status === 'pending')).length === 0 ? (
               <div className="text-center py-16">
                 <CheckCircle className="text-muted-foreground mx-auto mb-3" size={36} />
-                <p className="text-muted-foreground">No reports to review.</p>
+                <p className="text-muted-foreground">{showAll ? 'No reports to review.' : 'No pending reports. All caught up!'}</p>
               </div>
             ) : (
-              reports.map(renderReport)
+              (showAll ? reports : reports.filter((r) => r.status === 'pending')).map(renderReport)
             )}
           </div>
         )}
@@ -248,13 +247,17 @@ export default function Admin() {
         {/* Verifications */}
         {tab === 'verifications' && (
           <div className="space-y-3">
-            {verifications.length === 0 ? (
+            <div className="flex items-center justify-end gap-2">
+              <button onClick={() => setShowAll(false)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${!showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Pending</button>
+              <button onClick={() => setShowAll(true)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>All</button>
+            </div>
+            {(showAll ? verifications : verifications.filter((v) => v.status === 'pending')).length === 0 ? (
               <div className="text-center py-16">
                 <BadgeCheck className="text-muted-foreground mx-auto mb-3" size={36} />
-                <p className="text-muted-foreground">No verification requests.</p>
+                <p className="text-muted-foreground">{showAll ? 'No verification requests.' : 'No pending verifications. All caught up!'}</p>
               </div>
             ) : (
-              verifications.map((req) => {
+              (showAll ? verifications : verifications.filter((v) => v.status === 'pending')).map((req) => {
                 const userProfile = profiles.find((p) => p.created_by_id === req.user_id);
                 return (
                   <div key={req.id} className="bg-card rounded-2xl border border-border p-4">
