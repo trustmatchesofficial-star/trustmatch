@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Search, MapPin, BadgeCheck, SlidersHorizontal, Heart } from 'lucide-react';
+import { Search, MapPin, BadgeCheck, SlidersHorizontal, Heart, Flag } from 'lucide-react';
+import ReportModal from '@/components/ReportModal';
 
 export default function Browse() {
   const { profile } = useOutletContext();
@@ -11,6 +12,7 @@ export default function Browse() {
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(99);
   const [showFilters, setShowFilters] = useState(false);
+  const [reportTarget, setReportTarget] = useState(null);
 
   const loadProfiles = async () => {
     setLoading(true);
@@ -107,6 +109,13 @@ export default function Browse() {
                         <BadgeCheck size={16} />
                       </div>
                     )}
+                    <button
+                      onClick={() => setReportTarget(p)}
+                      className="absolute top-2 left-2 bg-black/50 backdrop-blur-md text-white p-1.5 rounded-full hover:bg-destructive transition z-10"
+                      title="Report suspicious activity"
+                    >
+                      <Flag size={14} />
+                    </button>
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                       <h3 className="text-white font-semibold text-sm">
                         {p.full_name}, {p.age}
@@ -124,6 +133,11 @@ export default function Browse() {
           )}
         </div>
       </div>
+      <ReportModal
+        reportedProfile={reportTarget}
+        reporterId={profile?.created_by_id}
+        onClose={() => setReportTarget(null)}
+      />
     </div>
   );
 }
