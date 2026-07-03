@@ -6,10 +6,12 @@ import MatchCelebration from '@/components/MatchCelebration';
 import NotificationBell from '@/components/NotificationBell';
 import ReportModal from '@/components/ReportModal';
 import BlockModal from '@/components/BlockModal';
+import OnboardingChecklist from '@/components/OnboardingChecklist';
 import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell } from 'lucide-react';
 
 export default function Discover() {
-  const { profile } = useOutletContext();
+  const { profile, setProfile } = useOutletContext();
+  const [checklistComplete, setChecklistComplete] = useState(false);
   const [profiles, setProfiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [swipeDirection, setSwipeDirection] = useState(null);
@@ -120,6 +122,18 @@ export default function Discover() {
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
     </div>
   );
+
+  // Gate: require verification + emergency contact before accessing the feed
+  const needsChecklist = !profile?.is_verified || !checklistComplete;
+  if (needsChecklist) {
+    return (
+      <OnboardingChecklist
+        profile={profile}
+        setProfile={setProfile}
+        onComplete={() => setChecklistComplete(true)}
+      />
+    );
+  }
 
   return (
     <>
