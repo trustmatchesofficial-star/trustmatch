@@ -7,7 +7,7 @@ import NotificationBell from './NotificationBell';
 import MatchCelebration from './MatchCelebration';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
-import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings } from 'lucide-react';
+import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings, ClipboardList } from 'lucide-react';
 
 export default function Layout() {
   const location = useLocation();
@@ -98,17 +98,30 @@ export default function Layout() {
               </Link>
             ))}
             {isAdmin && (
-              <Link
-                to="/admin"
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition ${
-                  location.pathname === '/admin'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-secondary'
-                }`}
-              >
-                <Shield size={16} />
-                Admin
-              </Link>
+              <>
+                <Link
+                  to="/onboarding-dashboard"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition ${
+                    location.pathname === '/onboarding-dashboard'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <ClipboardList size={16} />
+                  Onboarding
+                </Link>
+                <Link
+                  to="/admin"
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition ${
+                    location.pathname === '/admin'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'text-muted-foreground hover:bg-secondary'
+                  }`}
+                >
+                  <Shield size={16} />
+                  Admin
+                </Link>
+              </>
             )}
             <NotificationBell profile={profile} />
           </nav>

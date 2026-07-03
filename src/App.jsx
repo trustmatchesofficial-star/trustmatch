@@ -22,6 +22,7 @@ import Chat from '@/pages/Chat';
 import ProfilePage from '@/pages/ProfilePage';
 import Premium from '@/pages/Premium';
 import Admin from '@/pages/Admin';
+import OnboardingDashboard from '@/pages/OnboardingDashboard';
 import SafetyHub from '@/pages/SafetyHub';
 import Settings from '@/pages/Settings';
 import SafetyCenter from '@/pages/SafetyCenter';
@@ -69,6 +70,7 @@ const AuthenticatedApp = () => {
           <Route path="/safety-center" element={<SafetyCenter />} />
           <Route path="/date-safety/:matchId" element={<DateSafety />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/onboarding-dashboard" element={<OnboardingDashboard />} />
         </Route>
       </Route>
       <Route path="*" element={<PageNotFound />} />
