@@ -72,6 +72,19 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "banned"
+      ],
+      "default": "active"
+    },
+    "trust_score": {
+      "type": "number",
+      "default": 50
     }
   },
   "required": [

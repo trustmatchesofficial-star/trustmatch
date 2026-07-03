@@ -11,14 +11,20 @@
     "reason": {
       "type": "string",
       "enum": [
-        "fake_profile",
         "harassment",
+        "scam",
+        "fake_profile",
         "inappropriate_content",
+        "safety_concern",
         "spam",
         "other"
-      ]
+      ],
+      "default": "other"
     },
     "details": {
+      "type": "string"
+    },
+    "message_id": {
       "type": "string"
     },
     "status": {
@@ -30,6 +36,16 @@
         "dismissed"
       ],
       "default": "pending"
+    },
+    "action_taken": {
+      "type": "string",
+      "enum": [
+        "none",
+        "warned",
+        "suspended",
+        "banned"
+      ],
+      "default": "none"
     }
   },
   "required": [

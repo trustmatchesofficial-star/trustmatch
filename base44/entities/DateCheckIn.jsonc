@@ -1,0 +1,42 @@
+{
+  "name": "DateCheckIn",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "date_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "check_in_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "checked_in_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "location_note": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "checked_in",
+        "missed",
+        "escalated"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "user_id",
+    "check_in_time",
+    "status"
+  ]
+}

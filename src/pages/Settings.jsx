@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
@@ -151,6 +151,13 @@ export default function Settings() {
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Safety & Verification</h2>
           </div>
           <div className="bg-card rounded-2xl border border-border divide-y divide-border">
+            <Link to="/safety-center" className="w-full flex items-center justify-between p-4 hover:bg-teal/5 transition">
+              <div className="flex items-center gap-2">
+                <Shield size={16} className="text-teal" />
+                <span className="text-sm font-medium text-teal">Open Safety Center</span>
+              </div>
+              <ChevronRight size={16} className="text-teal" />
+            </Link>
             <div className="flex items-center justify-between p-4">
               <span className="text-sm">Identity verification status</span>
               <span className={`text-sm font-medium flex items-center gap-1 ${profile?.is_verified ? 'text-teal' : 'text-muted-foreground'}`}>

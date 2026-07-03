@@ -2,7 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import MessageBubble from '@/components/MessageBubble';
-import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban } from 'lucide-react';
+import MessageSafetyBanner, { detectUnsafe } from '@/components/MessageSafetyBanner';
+import PanicButton from '@/components/PanicButton';
+import DateCheckInScheduler from '@/components/DateCheckInScheduler';
+import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
 
 export default function Chat() {
@@ -18,6 +21,7 @@ export default function Chat() {
   const [isBlockedByMe, setIsBlockedByMe] = useState(false);
   const [isBlockedByThem, setIsBlockedByThem] = useState(false);
   const [blockTarget, setBlockTarget] = useState(null);
+  const [showCheckIn, setShowCheckIn] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -115,7 +119,10 @@ export default function Chat() {
             <MoreVertical size={20} />
           </button>
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg py-1 w-40 z-30">
+            <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg py-1 w-44 z-30">
+              <button onClick={() => { setShowCheckIn(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-teal hover:bg-secondary transition">
+                <Calendar size={16} /> Schedule check-in
+              </button>
               <button onClick={handleReport} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-secondary transition">
                 <Flag size={16} /> Report User
               </button>
@@ -134,9 +141,17 @@ export default function Chat() {
             <p className="text-muted-foreground">No messages yet. Say hello! 👋</p>
           </div>
         ) : (
-          messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} isMine={msg.sender_id === profile?.created_by_id} />
-          ))
+          messages.map((msg) => {
+            const mine = msg.sender_id === profile?.created_by_id;
+            return (
+              <div key={msg.id}>
+                <MessageBubble message={msg} isMine={mine} />
+                {!mine && detectUnsafe(msg.content) && (
+                  <MessageSafetyBanner message={msg} otherProfile={otherProfile} myId={profile?.created_by_id} />
+                )}
+              </div>
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>
@@ -179,6 +194,15 @@ export default function Chat() {
         onClose={() => setBlockTarget(null)}
         onBlocked={() => setIsBlockedByMe(true)}
       />
+      <PanicButton profile={profile} variant="fab" />
+      {showCheckIn && (
+        <DateCheckInScheduler
+          profile={profile}
+          matchId={matchId}
+          otherName={otherProfile?.full_name}
+          onClose={() => setShowCheckIn(false)}
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { MapPin, BadgeCheck, Heart, Edit3, Camera, X, Check, Crown, ShieldCheck } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
+import TrustScoreBadge from '@/components/TrustScoreBadge';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 
@@ -103,10 +104,11 @@ export default function ProfilePage() {
             {profile.full_name}, {profile.age}
             {profile.is_verified && <BadgeCheck size={22} className="text-teal inline ml-2 align-middle" />}
           </h2>
-          <div className="flex items-center gap-3 text-muted-foreground mt-1">
+          <div className="flex items-center gap-3 text-muted-foreground mt-1 mb-2">
             {profile.location && <span className="flex items-center gap-1 text-sm"><MapPin size={14} /> {profile.location}</span>}
             <span className="text-sm capitalize">{profile.looking_for?.replace('_', ' ')}</span>
           </div>
+          <TrustScoreBadge profile={profile} />
         </div>
 
         {/* Verification CTA */}

@@ -8,6 +8,9 @@
     "selfie_url": {
       "type": "string"
     },
+    "id_photo_url": {
+      "type": "string"
+    },
     "status": {
       "type": "string",
       "enum": [

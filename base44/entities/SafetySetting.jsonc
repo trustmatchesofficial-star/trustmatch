@@ -29,6 +29,9 @@
     "emergency_contact_phone": {
       "type": "string"
     },
+    "emergency_contact_email": {
+      "type": "string"
+    },
     "safety_word": {
       "type": "string"
     },
