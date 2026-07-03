@@ -5,8 +5,7 @@ Deno.serve(async (req) => {
     const base44 = createClientFromRequest(req);
     const user = await base44.auth.me();
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    const body = await req.json().catch(() => ({}));
-    const userId = body.user_id || user.id;
+    const userId = user.id;
 
     const settings = await base44.asServiceRole.entities.SafetySetting.filter({ created_by_id: userId });
     const setting = settings[0];

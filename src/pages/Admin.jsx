@@ -48,7 +48,7 @@ export default function Admin() {
 
   useEffect(() => { loadData(); }, []);
 
-  if (profile?.role !== 'admin' && !profile) return null;
+  if (!profile || profile.role !== 'admin') return null;
 
   const handleVerification = async (req, approved) => {
     try {
