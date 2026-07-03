@@ -12,7 +12,7 @@ export default function LandingDateSafetyTracker() {
     <section id="safety" className="py-20 px-6 bg-background">
       <div className="max-w-6xl mx-auto mb-12">
         <img
-          src="https://media.base44.com/images/public/6a3ebc375433828e3faa9c58/8d88c8f12_IMG_7752.jpg"
+          src="https://media.base44.com/images/public/6a3ebc375433828e3faa9c58/88676525f_IMG_7751.jpg"
           alt="Date Safety Tracker — share your live location during a date, visible only to you both, with full control to turn it off anytime."
           className="w-full h-auto rounded-3xl border border-border shadow-xl"
         />
