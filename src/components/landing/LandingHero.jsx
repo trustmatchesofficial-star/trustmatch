@@ -22,7 +22,7 @@ export default function LandingHero() {
             Verified dating built on <span className="text-primary">trust.</span>
           </h1>
           <p className="text-lg text-slate-600 max-w-md mb-8 text-balance">
-            Meet real people with identity verification, privacy-first design, and optional safety tools that put you in control.
+            A dating platform built around trust, safety and genuine connections — featuring identity verification, advanced safety tools, live date tracking, and privacy-first features to help you date with confidence.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 mb-10">
             <Link
