@@ -8,11 +8,16 @@ export default function DailyDigestButton({ profile }) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [matchCount, setMatchCount] = useState(0);
+  const [error, setError] = useState('');
 
   const handleSend = async () => {
-    if (!profile || !user?.email) return;
+    if (!profile || !user?.email) {
+      setError('Your email address is not available. Please try again later.');
+      return;
+    }
     setSending(true);
     setSent(false);
+    setError('');
     try {
       const likes = await base44.entities.Like.filter({ liker_id: profile.created_by_id });
       const likedIds = likes.map((l) => l.liked_id);
@@ -77,9 +82,22 @@ export default function DailyDigestButton({ profile }) {
       setSent(true);
     } catch (err) {
       console.error(err);
+      setError(err?.message || 'Something went wrong sending the digest. Please try again.');
     }
     setSending(false);
   };
+
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 mt-3 px-4 py-2.5 rounded-xl bg-destructive/10 text-destructive text-sm">
+        <Inbox size={16} />
+        <span className="flex-1">{error}</span>
+        <button onClick={() => { setError(''); setSent(false); }} className="underline text-xs">
+          Try again
+        </button>
+      </div>
+    );
+  }
 
   if (sent) {
     return (
