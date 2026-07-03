@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail, Video } from 'lucide-react';
+import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail, Video, LogOut } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
 import LiveVideoVerification from '@/components/LiveVideoVerification';
 import DailyDigestButton from '@/components/DailyDigestButton';
@@ -252,6 +252,20 @@ export default function Settings() {
               <ChevronRight size={16} className="text-destructive" />
             </button>
           </div>
+        </div>
+
+        {/* Sign out */}
+        <div className="mb-6">
+          <button
+            onClick={() => base44.auth.logout('/')}
+            className="w-full flex items-center justify-between p-4 bg-card rounded-2xl border border-border hover:bg-destructive/5 transition"
+          >
+            <div className="flex items-center gap-2">
+              <LogOut size={16} className="text-destructive" />
+              <span className="text-sm font-medium text-destructive">Sign out</span>
+            </div>
+            <ChevronRight size={16} className="text-destructive" />
+          </button>
         </div>
 
         {saving && <p className="text-center text-xs text-muted-foreground">Saving...</p>}
