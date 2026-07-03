@@ -4,12 +4,17 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Only admins can trigger manually; scheduled runs use service role
-    let isAdminContext = false;
+    // Enforce authorization: only authenticated admins may trigger this function.
+    // Scheduled automations invoke it with a service token that resolves to an admin context.
+    let user;
     try {
-      const user = await base44.auth.me();
-      if (user && user.role === 'admin') isAdminContext = true;
-    } catch (e) {}
+      user = await base44.auth.me();
+    } catch (e) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden — admin access required' }, { status: 403 });
+    }
 
     const svc = base44.asServiceRole;
 
