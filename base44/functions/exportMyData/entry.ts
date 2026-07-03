@@ -23,7 +23,7 @@ Deno.serve(async (req) => {
       base44.entities.SafetyAlert.filter({ reporter_id: user.id }),
     ]);
 
-    const data = {
+    return Response.json({
       exported_at: new Date().toISOString(),
       user: { id: user.id, email: user.email, full_name: user.full_name },
       profile: profiles[0] || null,
@@ -39,16 +39,6 @@ Deno.serve(async (req) => {
       subscriptions,
       verification_requests: verifications,
       safety_alerts_submitted: alerts,
-    };
-
-    const json = JSON.stringify(data, null, 2);
-
-    return new Response(json, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': 'attachment; filename="my-trustmatches-data.json"',
-      },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
