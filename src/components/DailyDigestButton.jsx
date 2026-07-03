@@ -3,6 +3,15 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import { Send, Loader2, CheckCircle, Inbox } from 'lucide-react';
 
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export default function DailyDigestButton({ profile }) {
   const { user } = useAuth();
   const [sending, setSending] = useState(false);
@@ -51,18 +60,23 @@ export default function DailyDigestButton({ profile }) {
 
       const matchCards = topMatches
         .map(
-          (m) => `
+          (m) => {
+            const name = escapeHtml(m.full_name);
+            const location = escapeHtml(m.location || 'Nearby');
+            const bio = m.bio ? escapeHtml(m.bio.substring(0, 80) + (m.bio.length > 80 ? '...' : '')) : '';
+            return `
           <div style="background:#f5f5f5;border-radius:12px;padding:14px 16px;margin:10px 0;">
-            <div style="font-weight:600;font-size:15px;color:#222;">${m.full_name}, ${m.age} ${m.is_verified ? "\u2713" : ""}</div>
-            <div style="font-size:13px;color:#888;margin-top:2px;">${m.location || "Nearby"}${m.bio ? " \u2014 " + m.bio.substring(0, 80) + (m.bio.length > 80 ? "..." : "") : ""}</div>
-          </div>`
+            <div style="font-weight:600;font-size:15px;color:#222;">${name}, ${escapeHtml(m.age)} ${m.is_verified ? "\u2713" : ""}</div>
+            <div style="font-size:13px;color:#888;margin-top:2px;">${location}${bio ? " \u2014 " + bio : ""}</div>
+          </div>`;
+          }
         )
         .join("");
 
       const body = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:24px;background:#fff;">
   <h2 style="color:#f0568b;margin:0 0 4px;font-size:22px;">Your Daily Matches</h2>
   <p style="color:#999;font-size:13px;margin:0 0 20px;">${topMatches.length} new people to discover today</p>
-  <p style="font-size:15px;color:#333;">Hi ${profile.full_name},</p>
+  <p style="font-size:15px;color:#333;">Hi ${escapeHtml(profile.full_name)},</p>
   <p style="font-size:14px;color:#888;">We found some great potential matches for you:</p>
   ${matchCards}
   <p style="font-size:14px;color:#555;margin-top:24px;">Open Trust Matches to see full profiles and start connecting!</p>
