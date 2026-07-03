@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { MapPin, BadgeCheck, Heart, Edit3, Camera, X, Check, Crown, ShieldCheck, Video } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 
@@ -108,7 +109,10 @@ export default function ProfilePage() {
             {profile.location && <span className="flex items-center gap-1 text-sm"><MapPin size={14} /> {profile.location}</span>}
             <span className="text-sm capitalize">{profile.looking_for?.replace('_', ' ')}</span>
           </div>
-          <TrustScoreBadge profile={profile} />
+          <div className="flex items-center gap-2 mb-2">
+            <TrustScoreBadge profile={profile} />
+            {profile.is_verified && <VerifiedBadge size="sm" />}
+          </div>
           {profile.is_live_verified && (
             <span className="inline-flex items-center gap-1 mt-2 bg-purplecustom/15 text-purplecustom px-3 py-1 rounded-full text-xs font-medium">
               <Video size={12} /> Live verified

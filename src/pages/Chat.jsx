@@ -7,6 +7,7 @@ import PanicButton from '@/components/PanicButton';
 import DateCheckInScheduler from '@/components/DateCheckInScheduler';
 import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -108,9 +109,9 @@ export default function Chat() {
           className="w-10 h-10 rounded-full object-cover"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <h2 className="font-semibold truncate">{otherProfile?.full_name}</h2>
-            {otherProfile?.is_verified && <BadgeCheck size={16} className="text-accent" />}
+            {otherProfile?.is_verified && <VerifiedBadge size="sm" />}
           </div>
           <p className="text-xs text-green-500">Active now</p>
         </div>

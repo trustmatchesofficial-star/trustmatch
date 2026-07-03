@@ -1,5 +1,6 @@
-import { BadgeCheck, MapPin, Flag, Ban } from 'lucide-react';
+import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck } from 'lucide-react';
 import TrustScoreBadge from './TrustScoreBadge';
+import VerifiedBadge from './VerifiedBadge';
 
 export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
   if (!profile) return null;
@@ -64,8 +65,13 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
             </p>
           )}
 
-          <div className="mb-2">
+          <div className="flex items-center gap-2 mb-2">
             <TrustScoreBadge profile={profile} size="sm" />
+            {profile.is_verified && (
+              <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-md text-white px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                <ShieldCheck size={11} /> Identity Verified
+              </span>
+            )}
           </div>
 
           {profile.bio && (

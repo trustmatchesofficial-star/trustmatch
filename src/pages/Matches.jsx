@@ -3,7 +3,7 @@ import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ReportModal from '@/components/ReportModal';
 import BlockModal from '@/components/BlockModal';
-import { Heart, MessageCircle, MapPin, BadgeCheck, Flag, Ban } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, BadgeCheck, Flag, Ban, ShieldCheck } from 'lucide-react';
 
 export default function Matches() {
   const { profile } = useOutletContext();
@@ -116,7 +116,11 @@ export default function Matches() {
                     <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent p-3">
                       <div className="flex items-center gap-1">
                         <h3 className="text-white font-semibold text-sm">{p.full_name}, {p.age}</h3>
-                        {p.is_verified && <BadgeCheck size={14} className="text-accent" />}
+                        {p.is_verified && (
+                          <span className="inline-flex items-center gap-0.5 bg-white/20 backdrop-blur-md text-white px-1.5 py-0.5 rounded-full text-[9px] font-semibold">
+                            <ShieldCheck size={9} /> Verified
+                          </span>
+                        )}
                       </div>
                       {p.location && (
                         <p className="flex items-center gap-0.5 text-white/80 text-xs">
