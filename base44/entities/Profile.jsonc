@@ -93,6 +93,11 @@
     "welcome_email_sent": {
       "type": "boolean",
       "default": false
+    },
+    "safety_warning_sent": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has been sent an automated warning email for receiving multiple safety reports."
     }
   },
   "required": [
