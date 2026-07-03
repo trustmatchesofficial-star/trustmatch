@@ -17,23 +17,17 @@ Deno.serve(async (req) => {
     const alert = await base44.asServiceRole.entities.SafetyAlert.get(alert_id);
     if (!alert) return Response.json({ error: 'Alert not found' }, { status: 404 });
 
-    // Verify the caller is the actual subject of the alert — fetch their profile and match on
-    // subject_full_name (case-insensitive) or subject_phone_or_social_handle
+    // Verify the caller is the actual subject of the alert using the system-assigned
+    // subject profile ID stored on the alert — never match on mutable full_name
+    if (!alert.subject_profile_id) {
+      return Response.json({ error: 'This alert does not have a linked subject profile and cannot be disputed' }, { status: 400 });
+    }
+
     const profiles = await base44.asServiceRole.entities.Profile.filter({ created_by_id: user.id });
     const myProfile = profiles[0];
     if (!myProfile) return Response.json({ error: 'Profile not found' }, { status: 404 });
 
-    const nameMatch =
-      alert.subject_full_name &&
-      myProfile.full_name &&
-      alert.subject_full_name.trim().toLowerCase() === myProfile.full_name.trim().toLowerCase();
-
-    const handleMatch =
-      alert.subject_phone_or_social_handle &&
-      myProfile.full_name &&
-      alert.subject_phone_or_social_handle.trim().toLowerCase() === myProfile.full_name.trim().toLowerCase();
-
-    if (!nameMatch && !handleMatch) {
+    if (myProfile.id !== alert.subject_profile_id) {
       return Response.json({ error: 'You can only dispute alerts filed about yourself' }, { status: 403 });
     }
 

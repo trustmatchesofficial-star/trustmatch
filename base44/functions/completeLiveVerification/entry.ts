@@ -7,9 +7,9 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await req.json();
-    const { live_photo_url, profile_photo_urls } = body;
-    if (!live_photo_url || !Array.isArray(profile_photo_urls) || profile_photo_urls.length === 0) {
-      return Response.json({ error: 'Missing live_photo_url or profile_photo_urls' }, { status: 400 });
+    const { live_photo_url } = body;
+    if (!live_photo_url) {
+      return Response.json({ error: 'Missing live_photo_url' }, { status: 400 });
     }
 
     // Fetch the user's profile server-side to ensure we update the correct record
@@ -20,6 +20,12 @@ Deno.serve(async (req) => {
     // Reject if already verified — no need to re-run
     if (profile.is_live_verified) {
       return Response.json({ match: true, already_verified: true, profile });
+    }
+
+    // Use the user's ACTUAL profile photos from the database — never trust client-supplied URLs
+    const profile_photo_urls = (profile.photos || []).filter(Boolean);
+    if (profile_photo_urls.length === 0) {
+      return Response.json({ error: 'No profile photos found to compare against' }, { status: 400 });
     }
 
     // Run the LLM face-matching check server-side
