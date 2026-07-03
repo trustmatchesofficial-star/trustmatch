@@ -1,70 +1,125 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, ArrowRight } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Heart, Lock, Users, Star } from 'lucide-react';
+
+const features = [
+  { icon: ShieldCheck, title: 'Verified Identities', desc: 'Secure verification for genuine profiles.' },
+  { icon: Lock, title: 'Privacy First', desc: 'Your data. Your control. Always.' },
+  { icon: Users, title: 'Date Safety Mode', desc: 'Pre-meet safety tools & trusted contacts.' },
+  { icon: Star, title: 'Shared Experiences', desc: 'Events, hobbies & interests to help you connect.' },
+];
 
 export default function LandingHero() {
   return (
-    <section className="relative overflow-hidden bg-background">
-      <div className="max-w-6xl mx-auto px-6 py-16 md:py-24 grid md:grid-cols-2 gap-12 items-center">
-        {/* Left: Text */}
-        <div>
-          <div className="inline-flex items-center gap-2 bg-secondary border border-border rounded-full px-3 py-1 mb-6">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs font-medium text-muted-foreground">Now welcoming beta members</span>
+    <section
+      id="about"
+      className="relative overflow-hidden"
+      style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, hsl(344 84% 20%) 0%, hsl(245 6% 7%) 70%)' }}
+    >
+      {/* Ambient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="relative max-w-6xl mx-auto px-6 pt-16 pb-8 md:pt-24 md:pb-12">
+        {/* Top: Branding + Title */}
+        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16">
+          <div className="flex items-center justify-center gap-2.5 mb-5">
+            <div className="w-11 h-11 rounded-2xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+              <Heart className="text-primary fill-primary" size={22} />
+            </div>
+            <span className="font-heading font-extrabold text-2xl md:text-3xl text-foreground tracking-tight">Trust Matches</span>
           </div>
 
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-heading font-extrabold leading-[1.05] mb-4 text-balance">
-            <span className="text-foreground">Trust</span>
-            <br />
-            <span className="text-primary">Matches</span>
-          </h1>
-
-          <p className="text-sm md:text-base font-semibold tracking-wider uppercase mb-4 text-muted-foreground">
-            Real people. Real connections. Built on <span className="text-primary">trust.</span>
+          <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-4">
+            Real People. Real Connections. Built on Trust.
           </p>
 
-          <p className="text-lg text-muted-foreground max-w-md mb-8 leading-relaxed">
+          <div className="flex items-center justify-center gap-3 mb-5">
+            <div className="w-12 h-px bg-border" />
+            <Heart className="text-primary fill-primary" size={16} />
+            <div className="w-12 h-px bg-border" />
+          </div>
+
+          <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
             A dating platform designed for people who value{' '}
             <span className="font-semibold text-primary">authenticity</span>,{' '}
             <span className="font-semibold text-primary">safety</span>, and{' '}
             <span className="font-semibold text-primary">meaningful</span> relationships.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
             <Link
               to="/register"
-              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-7 py-3.5 rounded-full font-semibold shadow-lg shadow-primary/20 hover:shadow-xl hover:scale-[1.02] transition-all"
+              className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-4 rounded-full font-bold shadow-lg shadow-primary/30 hover:shadow-xl hover:scale-[1.02] transition-all"
             >
               Join Free <ArrowRight size={18} />
             </Link>
             <a
               href="#safety"
-              className="inline-flex items-center justify-center gap-2 border border-border text-foreground px-7 py-3.5 rounded-full font-semibold hover:bg-secondary transition"
+              className="inline-flex items-center justify-center gap-2 border border-border bg-card/50 backdrop-blur-sm text-foreground px-8 py-4 rounded-full font-semibold hover:bg-secondary transition"
             >
               Learn About Safety
             </a>
           </div>
         </div>
 
-        {/* Right: Image with glassmorphism card */}
-        <div className="relative">
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+        {/* Middle: Image with neon heart glow */}
+        <div className="relative max-w-4xl mx-auto mb-12 md:mb-16">
+          <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-border">
             <img
-              src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=800&h=900&fit=crop"
-              alt="A couple touching foreheads under warm light"
-              className="w-full h-[420px] md:h-[520px] object-cover"
+              src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=1000&h=700&fit=crop"
+              alt="A couple smiling at each other"
+              className="w-full h-[360px] md:h-[560px] object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/60 via-transparent to-transparent" />
+            {/* Neon heart glow overlay */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(circle at 50% 40%, rgba(214,51,108,0.25) 0%, transparent 50%)' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
           </div>
 
-          {/* Glassmorphism card */}
-          <div className="absolute bottom-5 right-5 bg-card/70 backdrop-blur-xl border border-border rounded-2xl p-4 shadow-xl max-w-[200px]">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center">
-                <ShieldCheck size={18} className="text-primary" />
+          {/* Glassmorphism floating card */}
+          <div className="absolute bottom-6 right-4 md:right-8 bg-card/70 backdrop-blur-xl border border-border rounded-2xl p-5 shadow-xl max-w-[240px]">
+            <div className="flex items-center gap-2.5 mb-1.5">
+              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                <ShieldCheck size={22} className="text-primary" />
               </div>
-              <span className="font-bold text-sm text-foreground tracking-wide">VERIFIED PROFILES</span>
+              <div>
+                <p className="font-bold text-sm text-foreground tracking-wide">VERIFIED PROFILES</p>
+                <p className="text-xs text-muted-foreground">Real people. Genuine connections.</p>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">Real people. Genuine connections.</p>
+          </div>
+        </div>
+
+        {/* Feature grid */}
+        <div className="bg-card/60 backdrop-blur-sm rounded-3xl border border-border p-6 md:p-8 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+            {features.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="text-center">
+                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Icon size={26} className="text-primary" />
+                </div>
+                <h3 className="font-bold text-foreground mb-1.5 text-sm tracking-wide uppercase">{title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA bar */}
+        <div className="rounded-3xl bg-gradient-to-r from-primary to-primary/80 px-6 md:px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl shadow-primary/20">
+          <div className="flex items-center gap-2.5 text-primary-foreground">
+            <ShieldCheck size={24} />
+            <span className="font-semibold text-sm md:text-base">Your safety. Your trust. Your match.</span>
+          </div>
+          <div className="flex items-center gap-3 text-primary-foreground">
+            <span className="text-sm hidden sm:inline">Join the future of dating.</span>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-1.5 bg-primary-foreground text-primary px-7 py-3 rounded-full font-bold text-sm hover:scale-105 transition shadow-lg whitespace-nowrap"
+            >
+              Join Trust Matches. <ArrowRight size={16} />
+            </Link>
           </div>
         </div>
       </div>

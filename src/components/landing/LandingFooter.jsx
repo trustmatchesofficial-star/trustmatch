@@ -10,25 +10,6 @@ const footerCols = [
 export default function LandingFooter() {
   return (
     <>
-      {/* Magenta CTA bar */}
-      <section className="px-6 py-8">
-        <div className="max-w-6xl mx-auto rounded-3xl bg-primary px-8 py-8 flex flex-col md:flex-row items-center justify-between gap-4 shadow-2xl shadow-primary/20">
-          <div className="flex items-center gap-2.5 text-primary-foreground">
-            <ShieldCheck size={24} />
-            <span className="font-semibold text-sm md:text-base">Your safety. Your trust. Your match.</span>
-          </div>
-          <div className="flex items-center gap-3 text-primary-foreground">
-            <span className="text-sm hidden sm:inline">Join the future of dating.</span>
-            <Link
-              to="/register"
-              className="inline-flex items-center gap-1.5 bg-primary-foreground text-primary px-6 py-2.5 rounded-full font-bold text-sm hover:scale-105 transition shadow-lg"
-            >
-              Join Trust Matches. <ArrowRight size={16} />
-            </Link>
-          </div>
-        </div>
-      </section>
-
       <footer className="border-t border-border bg-background">
         <div className="max-w-6xl mx-auto px-6 py-12 grid gap-10 md:grid-cols-5">
           <div className="md:col-span-2">

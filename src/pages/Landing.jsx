@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingHero from '@/components/landing/LandingHero';
-import LandingFeatures from '@/components/landing/LandingFeatures';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
 import LandingDateSafetyTracker from '@/components/landing/LandingDateSafetyTracker';
 import LandingSafetyGrid from '@/components/landing/LandingSafetyGrid';
@@ -34,7 +33,6 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <LandingHeader />
       <LandingHero />
-      <LandingFeatures />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />
       <LandingSafetyGrid />
