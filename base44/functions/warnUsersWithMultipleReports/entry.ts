@@ -47,12 +47,12 @@ Deno.serve(async (req) => {
 
     // Fetch the user's email
     const users = await svc.entities.User.filter({ id: reportedProfile.created_by_id });
-    const user = users[0];
-    if (!user || !user.email) {
+    const reportUser = users[0];
+    if (!reportUser || !reportUser.email) {
       return Response.json({ ok: true, skipped: 'no_email' });
     }
 
-    const firstName = (reportedProfile.full_name || user.full_name || 'there').split(' ')[0];
+    const firstName = (reportedProfile.full_name || reportUser.full_name || 'there').split(' ')[0];
 
     const emailBody =
       `Hi ${firstName},\n\n` +
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
       `— Trust & Safety Team`;
 
     await svc.integrations.Core.SendEmail({
-      to: user.email,
+      to: reportUser.email,
       subject: 'Your account is under review — Trust Matches',
       body: emailBody,
       from_name: 'Trust Matches Safety',
@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
     return Response.json({
       ok: true,
       sent: true,
-      email: user.email,
+      email: reportUser.email,
       report_count: totalCount,
     });
   } catch (error) {
