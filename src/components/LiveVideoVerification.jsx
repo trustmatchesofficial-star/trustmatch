@@ -59,25 +59,15 @@ export default function LiveVideoVerification({ profile, setProfile, onClose }) 
       const { file_url: liveUrl } = await base44.integrations.Core.UploadFile({ file });
 
       setVerifying(true);
-      const res = await base44.integrations.Core.InvokeLLM({
-        prompt: `You are a face-matching assistant for identity verification on a dating app. The first ${profilePhotos.length} image(s) are the user's existing profile photos. The FINAL image is a live webcam capture just taken by the user in real time. Determine whether the person in the live capture appears to be the SAME person shown in the profile photos, based on facial features. Respond only with JSON.`,
-        file_urls: [...profilePhotos, liveUrl],
-        response_json_schema: {
-          type: 'object',
-          properties: {
-            same_person: { type: 'boolean' },
-            confidence: { type: 'number' },
-            note: { type: 'string' },
-          },
-          required: ['same_person', 'confidence', 'note'],
-        },
+      const response = await base44.functions.invoke('completeLiveVerification', {
+        live_photo_url: liveUrl,
+        profile_photo_urls: profilePhotos,
       });
-
-      const match = res?.same_person === true && (res?.confidence ?? 0) >= 0.7;
-      setResult({ ...res, match });
-      if (match) {
-        const updated = await base44.entities.Profile.update(profile.id, { is_live_verified: true, trust_score: Math.max((profile.trust_score || 50) + 15, 90) });
-        setProfile(updated);
+      const data = response.data;
+      const match = data?.match === true;
+      setResult({ same_person: match, confidence: data?.confidence, note: data?.note, match });
+      if (match && data.profile) {
+        setProfile(data.profile);
       }
     } catch (err) {
       setError('Verification failed. Please try again.');

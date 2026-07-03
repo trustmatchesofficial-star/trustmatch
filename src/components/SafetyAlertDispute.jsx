@@ -50,13 +50,11 @@ export default function SafetyAlertDispute({ userId, onClose }) {
     setDisputing(alert.id);
     setError('');
     try {
-      await base44.entities.SafetyAlert.update(alert.id, {
-        dispute_status: 'disputed',
+      const response = await base44.functions.invoke('submitSafetyAlertDispute', {
+        alert_id: alert.id,
         dispute_note: disputeNote.trim(),
-        disputed_by_id: userId,
-        disputed_at: new Date().toISOString(),
-        status: 'pending_review',
       });
+      if (response.data?.error) throw new Error(response.data.error);
       setDisputedIds((ids) => [...ids, alert.id]);
       setDisputeNote('');
     } catch (err) {
