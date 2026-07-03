@@ -6,6 +6,10 @@
       "type": "string",
       "description": "User who submitted the alert. Kept confidential \u2014 never shown to other users."
     },
+    "subject_profile_id": {
+      "type": "string",
+      "description": "System-assigned Profile ID of the person the alert is about. Used for secure dispute authorization \u2014 never shown publicly."
+    },
     "subject_full_name": {
       "type": "string",
       "description": "Full name of the person the alert is about."
@@ -92,28 +96,5 @@
     "category",
     "details",
     "status"
-  ],
-  "rls": {
-    "create": {
-      "created_by_id": "{{user.id}}"
-    },
-    "read": null,
-    "update": {
-      "$or": [
-        {
-          "created_by_id": "{{user.id}}"
-        },
-        {
-          "user_condition": {
-            "role": "admin"
-          }
-        }
-      ]
-    },
-    "delete": {
-      "user_condition": {
-        "role": "admin"
-      }
-    }
-  }
+  ]
 }
