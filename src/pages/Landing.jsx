@@ -89,7 +89,7 @@ export default function Landing() {
                 { icon: Lock, label: 'Privacy First' },
                 { icon: Heart, label: 'Meaningful Matches' },
               ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div key={label} className="flex items-center gap-2 text-sm text-muted-foreground bg-secondary/40 rounded-full px-3 py-1.5">
                   <Icon size={16} className="text-teal shrink-0" />
                   {label}
                 </div>
@@ -110,7 +110,7 @@ export default function Landing() {
           </div>
           <div className="space-y-4">
             {features.map(({ icon: Icon, title, desc, color, border }) => (
-              <div key={title} className={`bg-card rounded-2xl p-6 border ${border} flex items-start gap-4 hover:shadow-lg transition-shadow`}>
+              <div key={title} className={`bg-card rounded-2xl p-6 border ${border} flex items-start gap-4 hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}>
                 <div className={`w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center shrink-0 ${color}`}>
                   <Icon size={24} />
                 </div>
@@ -208,7 +208,7 @@ export default function Landing() {
 
       {/* CTA */}
       <section className="px-6 pb-24">
-        <div className="max-w-3xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center bg-gradient-to-b from-primary/5 to-transparent rounded-3xl p-10 border border-border/50">
           <h2 className="text-4xl md:text-5xl font-heading font-bold text-foreground mb-6 text-balance">
             Ready to find your match?
           </h2>

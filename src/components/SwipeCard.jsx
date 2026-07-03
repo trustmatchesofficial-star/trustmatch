@@ -1,4 +1,4 @@
-import { BadgeCheck, MapPin, ShieldCheck, Camera, Flag, Ban } from 'lucide-react';
+import { BadgeCheck, MapPin, Flag, Ban } from 'lucide-react';
 
 export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
   if (!profile) return null;
@@ -27,42 +27,34 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
           </span>
         </div>
 
-        <div className="absolute top-4 right-4 flex flex-col gap-1.5">
+        <div className="absolute top-4 right-4 flex flex-col gap-1.5 items-end">
           {profile.is_verified && (
-            <div className="flex items-center gap-1 bg-gold/90 text-background px-2 py-1 rounded-full text-[10px] font-semibold shadow-lg">
+            <div className="flex items-center gap-1 bg-gold/90 text-background px-2.5 py-1 rounded-full text-[10px] font-semibold shadow-lg backdrop-blur-md">
               <BadgeCheck size={12} /> Verified
-            </div>
-          )}
-          {profile.is_verified && (
-            <div className="flex items-center gap-1 bg-teal/90 text-background px-2 py-1 rounded-full text-[10px] font-semibold shadow-lg">
-              <ShieldCheck size={12} /> Trusted
-            </div>
-          )}
-          {profile.is_verified && (
-            <div className="flex items-center gap-1 bg-purplecustom/90 text-white px-2 py-1 rounded-full text-[10px] font-semibold shadow-lg">
-              <Camera size={12} /> Photo Verified
             </div>
           )}
         </div>
 
         {/* Bottom info */}
         <div className="absolute bottom-0 inset-x-0 p-5 text-white">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center justify-between mb-1">
             <h2 className="text-2xl font-bold">{profile.full_name}, {profile.age}</h2>
-            <button
-              onClick={(e) => { e.stopPropagation(); onReport?.(profile); }}
-              className="text-white/60 hover:text-destructive transition"
-              title="Report user"
-            >
-              <Flag size={16} />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); onBlock?.(profile); }}
-              className="text-white/60 hover:text-destructive transition"
-              title="Block user"
-            >
-              <Ban size={16} />
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={(e) => { e.stopPropagation(); onReport?.(profile); }}
+                className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-destructive/80 transition"
+                title="Report user"
+              >
+                <Flag size={14} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); onBlock?.(profile); }}
+                className="w-8 h-8 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white/70 hover:text-white hover:bg-destructive/80 transition"
+                title="Block user"
+              >
+                <Ban size={14} />
+              </button>
+            </div>
           </div>
 
           {profile.location && (
