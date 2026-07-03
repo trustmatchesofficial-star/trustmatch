@@ -13,6 +13,7 @@ export default function Settings() {
   const [saving, setSaving] = useState(false);
   const [showVerify, setShowVerify] = useState(false);
   const [showLive, setShowLive] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -237,10 +238,29 @@ export default function Settings() {
             <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Your GDPR Rights</h2>
           </div>
           <div className="bg-card rounded-2xl border border-border divide-y divide-border">
-            <button className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition">
+            <button
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  const res = await base44.functions.invoke('exportMyData', {});
+                  const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'my-trustmatches-data.json';
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error(err);
+                }
+                setExporting(false);
+              }}
+              disabled={exporting}
+              className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition disabled:opacity-50"
+            >
               <div className="flex items-center gap-2">
                 <Download size={16} className="text-muted-foreground" />
-                <span className="text-sm">Download my data</span>
+                <span className="text-sm">{exporting ? 'Preparing...' : 'Download my data'}</span>
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
             </button>
