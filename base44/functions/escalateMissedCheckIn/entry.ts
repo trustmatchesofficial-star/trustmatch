@@ -2,11 +2,11 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 
 Deno.serve(async (req) => {
   try {
-    const cronSecret = Deno.env.get('CRON_SECRET');
-    if (!cronSecret || req.headers.get('x-cron-secret') !== cronSecret) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
     const base44 = createClientFromRequest(req);
+    const user = await base44.auth.me();
+    if (!user || user.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
     const now = new Date();
     const checkIns = await base44.asServiceRole.entities.DateCheckIn.filter({ status: 'pending' });
     const overdue = checkIns.filter((c) => new Date(c.check_in_time) < now);
