@@ -19,13 +19,12 @@ export default function DailyDigestButton({ profile }) {
     setSent(false);
     setError('');
     try {
-      const likes = await base44.entities.Like.filter({ liker_id: profile.created_by_id });
+      // Only exclude profiles you actually liked — passes should still appear as suggestions
+      const likes = await base44.entities.Like.filter({ liker_id: profile.created_by_id, action: 'like' });
       const likedIds = likes.map((l) => l.liked_id);
 
       const myBlocks = await base44.entities.Block.filter({ blocker_id: profile.created_by_id });
       const blockedByMe = myBlocks.map((b) => b.blocked_id);
-      const blockedMe = await base44.entities.Block.filter({ blocked_id: profile.id });
-      const blockedMeUserIds = blockedMe.map((b) => b.blocker_id);
 
       const all = await base44.entities.Profile.list('-created_date', 200);
       let candidates = all.filter(
@@ -33,7 +32,6 @@ export default function DailyDigestButton({ profile }) {
           p.id !== profile.id &&
           !likedIds.includes(p.id) &&
           !blockedByMe.includes(p.id) &&
-          !blockedMeUserIds.includes(p.created_by_id) &&
           p.is_active &&
           p.is_onboarded &&
           p.age >= (profile.age_pref_min || 18) &&
