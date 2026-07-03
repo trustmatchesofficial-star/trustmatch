@@ -1,0 +1,38 @@
+{
+  "name": "DateFeedback",
+  "type": "object",
+  "properties": {
+    "reviewer_id": {
+      "type": "string"
+    },
+    "reviewed_id": {
+      "type": "string"
+    },
+    "match_id": {
+      "type": "string"
+    },
+    "safety_rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "comfort_rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5
+    },
+    "would_meet_again": {
+      "type": "boolean"
+    },
+    "comment": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reviewer_id",
+    "reviewed_id",
+    "match_id",
+    "safety_rating",
+    "comfort_rating"
+  ]
+}

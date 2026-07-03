@@ -5,7 +5,8 @@ import MessageBubble from '@/components/MessageBubble';
 import MessageSafetyBanner, { detectUnsafe } from '@/components/MessageSafetyBanner';
 import PanicButton from '@/components/PanicButton';
 import DateCheckInScheduler from '@/components/DateCheckInScheduler';
-import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar } from 'lucide-react';
+import PostDateFeedbackModal from '@/components/PostDateFeedbackModal';
+import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar, Star } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
@@ -23,6 +24,7 @@ export default function Chat() {
   const [isBlockedByThem, setIsBlockedByThem] = useState(false);
   const [blockTarget, setBlockTarget] = useState(null);
   const [showCheckIn, setShowCheckIn] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -124,6 +126,9 @@ export default function Chat() {
               <button onClick={() => { setShowCheckIn(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-teal hover:bg-secondary transition">
                 <Calendar size={16} /> Schedule check-in
               </button>
+              <button onClick={() => { setShowFeedback(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gold hover:bg-secondary transition">
+                <Star size={16} /> Leave date feedback
+              </button>
               <button onClick={handleReport} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-secondary transition">
                 <Flag size={16} /> Report User
               </button>
@@ -202,6 +207,14 @@ export default function Chat() {
           matchId={matchId}
           otherName={otherProfile?.full_name}
           onClose={() => setShowCheckIn(false)}
+        />
+      )}
+      {showFeedback && (
+        <PostDateFeedbackModal
+          profile={profile}
+          matchId={matchId}
+          otherProfile={otherProfile}
+          onClose={() => setShowFeedback(false)}
         />
       )}
     </div>

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, Shield, MapPin, Mic, Lock, BadgeCheck, MoreVertical, Send } from 'lucide-react';
+import PostDateFeedbackModal from '@/components/PostDateFeedbackModal';
+import { ArrowLeft, Shield, MapPin, Mic, Lock, BadgeCheck, MoreVertical, Send, Star } from 'lucide-react';
 
 export default function DateSafety() {
   const { matchId } = useParams();
@@ -13,6 +14,7 @@ export default function DateSafety() {
   const [locationOn, setLocationOn] = useState(false);
   const [audioOn, setAudioOn] = useState(false);
   const [checkIns, setCheckIns] = useState([]);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   useEffect(() => {
     if (!profile || !matchId) return;
@@ -37,6 +39,7 @@ export default function DateSafety() {
     try {
       await base44.entities.DateCheckIn.update(id, { status: 'checked_in', checked_in_at: new Date().toISOString() });
       setCheckIns((cs) => cs.filter((c) => c.id !== id));
+      setShowFeedback(true);
     } catch (err) { console.error(err); }
   };
 
@@ -228,6 +231,14 @@ export default function DateSafety() {
           </div>
         )}
       </div>
+      {showFeedback && (
+        <PostDateFeedbackModal
+          profile={profile}
+          matchId={matchId}
+          otherProfile={otherProfile}
+          onClose={() => setShowFeedback(false)}
+        />
+      )}
     </div>
   );
 }
