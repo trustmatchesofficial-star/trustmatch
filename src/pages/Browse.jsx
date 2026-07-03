@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Search, MapPin, BadgeCheck, SlidersHorizontal, Heart, Flag } from 'lucide-react';
+import { Search, MapPin, BadgeCheck, SlidersHorizontal, Heart, Flag, ArrowDownWideNarrow, X } from 'lucide-react';
 import ReportModal from '@/components/ReportModal';
-import TrustScoreBadge from '@/components/TrustScoreBadge';
+import TrustScoreBadge, { computeTrustScore } from '@/components/TrustScoreBadge';
 
 export default function Browse() {
   const { profile } = useOutletContext();
@@ -13,6 +13,10 @@ export default function Browse() {
   const [ageMin, setAgeMin] = useState(18);
   const [ageMax, setAgeMax] = useState(99);
   const [showFilters, setShowFilters] = useState(false);
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [selectedInterests, setSelectedInterests] = useState([]);
+  const [locationSearch, setLocationSearch] = useState('');
+  const [sortBy, setSortBy] = useState('trust');
   const [reportTarget, setReportTarget] = useState(null);
 
   const loadProfiles = async () => {
@@ -33,12 +37,37 @@ export default function Browse() {
     if (profile) loadProfiles();
   }, [profile]);
 
+  const allInterests = [...new Set(profiles.flatMap((p) => p.interests || []))].sort();
+
   const filtered = profiles.filter((p) => {
     if (search && !p.full_name?.toLowerCase().includes(search.toLowerCase()) &&
         !p.location?.toLowerCase().includes(search.toLowerCase())) return false;
     if (p.age < ageMin || p.age > ageMax) return false;
+    if (verifiedOnly && !p.is_verified) return false;
+    if (selectedInterests.length > 0 && !selectedInterests.some((i) => p.interests?.includes(i))) return false;
+    if (locationSearch && !p.location?.toLowerCase().includes(locationSearch.toLowerCase())) return false;
     return true;
   });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'trust') return computeTrustScore(b) - computeTrustScore(a);
+    if (sortBy === 'newest') return new Date(b.created_date) - new Date(a.created_date);
+    if (sortBy === 'verified') return (b.is_verified ? 1 : 0) - (a.is_verified ? 1 : 0);
+    if (sortBy === 'interests') {
+      const aShared = (a.interests || []).filter((i) => profile?.interests?.includes(i)).length;
+      const bShared = (b.interests || []).filter((i) => profile?.interests?.includes(i)).length;
+      return bShared - aShared;
+    }
+    return 0;
+  });
+
+  const toggleInterest = (interest) =>
+    setSelectedInterests((prev) =>
+      prev.includes(interest) ? prev.filter((i) => i !== interest) : [...prev, interest]
+    );
+
+  const activeFilterCount =
+    (verifiedOnly ? 1 : 0) + selectedInterests.length + (locationSearch ? 1 : 0) + (ageMin !== 18 || ageMax !== 99 ? 1 : 0);
 
   return (
     <div className="min-h-screen">
@@ -56,16 +85,49 @@ export default function Browse() {
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-input bg-card focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition"
               />
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center gap-2 px-4 py-3 rounded-xl border border-input bg-card hover:border-primary/50 transition"
-            >
-              <SlidersHorizontal size={18} />
-            </button>
+            <div className="relative">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-3 rounded-xl border bg-card transition ${showFilters ? 'border-primary' : 'border-input hover:border-primary/50'}`}
+              >
+                <SlidersHorizontal size={18} />
+                {activeFilterCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                    {activeFilterCount}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           {showFilters && (
-            <div className="mt-4 bg-card border border-border rounded-2xl p-4 space-y-3">
+            <div className="mt-4 bg-card border border-border rounded-2xl p-5 space-y-5 animate-fade-in">
+              {/* Sort */}
+              <div>
+                <label className="text-sm font-medium mb-2 flex items-center gap-1.5">
+                  <ArrowDownWideNarrow size={15} /> Sort by
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { value: 'trust', label: 'Trust Score' },
+                    { value: 'interests', label: 'Shared Interests' },
+                    { value: 'verified', label: 'Verified First' },
+                    { value: 'newest', label: 'Newest' },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setSortBy(opt.value)}
+                      className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${sortBy === opt.value ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-muted'}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Age range */}
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Age range: {ageMin} – {ageMax}
@@ -79,6 +141,68 @@ export default function Browse() {
                     className="flex-1 accent-primary" />
                 </div>
               </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Verified only */}
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium flex items-center gap-1.5">
+                  <BadgeCheck size={15} className="text-gold" /> Verified members only
+                </label>
+                <button
+                  onClick={() => setVerifiedOnly(!verifiedOnly)}
+                  className={`relative w-11 h-6 rounded-full transition ${verifiedOnly ? 'bg-teal' : 'bg-muted'}`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
+                </button>
+              </div>
+
+              <div className="h-px bg-border" />
+
+              {/* Location */}
+              <div>
+                <label className="text-sm font-medium mb-2 flex items-center gap-1.5">
+                  <MapPin size={15} /> Location
+                </label>
+                <input
+                  type="text"
+                  value={locationSearch}
+                  onChange={(e) => setLocationSearch(e.target.value)}
+                  placeholder="Enter a city or area..."
+                  className="w-full px-4 py-2.5 rounded-xl border border-input bg-background focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition text-sm"
+                />
+              </div>
+
+              {/* Interests */}
+              {allInterests.length > 0 && (
+                <>
+                  <div className="h-px bg-border" />
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Shared interests</label>
+                    <div className="flex flex-wrap gap-2">
+                      {allInterests.map((interest) => (
+                        <button
+                          key={interest}
+                          onClick={() => toggleInterest(interest)}
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium transition flex items-center gap-1 ${selectedInterests.includes(interest) ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-muted'}`}
+                        >
+                          {selectedInterests.includes(interest) && <X size={10} />}
+                          {interest}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={() => { setVerifiedOnly(false); setSelectedInterests([]); setLocationSearch(''); setAgeMin(18); setAgeMax(99); }}
+                  className="text-xs text-destructive hover:underline font-medium"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -90,14 +214,14 @@ export default function Browse() {
             <div className="flex items-center justify-center py-20">
               <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
             </div>
-          ) : filtered.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <div className="text-center py-20">
               <Heart className="text-muted-foreground mx-auto mb-3" size={36} />
               <p className="text-muted-foreground">No profiles match your filters.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {filtered.map((p) => (
+              {sorted.map((p) => (
                 <div key={p.id} className="bg-card rounded-2xl overflow-hidden border border-border hover:shadow-lg transition-shadow group">
                   <div className="relative aspect-[3/4]">
                     <img
