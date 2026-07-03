@@ -9,6 +9,7 @@ import PostDateFeedbackModal from '@/components/PostDateFeedbackModal';
 import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar, Star } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import SafetyCheckBanner from '@/components/SafetyCheckBanner';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -139,6 +140,13 @@ export default function Chat() {
           )}
         </div>
       </div>
+
+      {/* Private safety check */}
+      {otherProfile && (
+        <div className="max-w-2xl w-full mx-auto px-4 pt-3">
+          <SafetyCheckBanner subjectName={otherProfile.full_name} />
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 max-w-2xl w-full mx-auto">

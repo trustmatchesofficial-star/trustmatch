@@ -3,10 +3,12 @@ import { useOutletContext } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   Shield, Phone, Mail, MessageSquareWarning, Calendar, Clock, MapPin, Check, Send,
-  Siren, ChevronRight, User, AlertTriangle, CheckCircle, Loader2,
+  Siren, ChevronRight, User, AlertTriangle, CheckCircle, Loader2, ShieldAlert, Users,
 } from 'lucide-react';
 import PanicButton from '@/components/PanicButton';
 import DateCheckInScheduler from '@/components/DateCheckInScheduler';
+import SafetyAlertForm from '@/components/SafetyAlertForm';
+import SafetyAlertDispute from '@/components/SafetyAlertDispute';
 
 const ESCALATION_MODES = [
   { value: 'notify_contact', label: 'Notify my emergency contact', desc: 'We email your contact and our safety team.' },
@@ -34,6 +36,8 @@ export default function SafetyCenter() {
   const [checklist, setChecklist] = useState(CHECKLIST.map(() => false));
   const [shareMatch, setShareMatch] = useState(null);
   const [shareSent, setShareSent] = useState(false);
+  const [showAlertForm, setShowAlertForm] = useState(false);
+  const [showDispute, setShowDispute] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -297,6 +301,38 @@ export default function SafetyCenter() {
           )}
         </div>
 
+        {/* Community Safety Alerts */}
+        <div className="mb-6">
+          <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Community Safety Alerts</h2>
+          <div className="bg-card rounded-2xl border border-border p-4">
+            <div className="flex items-start gap-2.5 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-gold/15 flex items-center justify-center shrink-0">
+                <ShieldAlert className="text-gold" size={20} />
+              </div>
+              <div>
+                <h3 className="font-semibold text-sm mb-1">Report a safety concern about someone</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Warn others about concerning behavior you've experienced. All reports are human-reviewed before going live — nothing is publicly searchable. Safety concerns reported about your matches will show as private warnings before you connect.
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => setShowAlertForm(true)}
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-full bg-gold/15 text-gold font-semibold text-sm hover:bg-gold/25 transition"
+              >
+                <ShieldAlert size={16} /> Submit a Safety Alert
+              </button>
+              <button
+                onClick={() => setShowDispute(true)}
+                className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-full border border-border text-muted-foreground font-medium text-xs hover:text-foreground transition"
+              >
+                <Users size={14} /> Dispute an alert about me
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Panic */}
         <div className="mb-6">
           <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Emergency</h2>
@@ -322,6 +358,20 @@ export default function SafetyCenter() {
             const cis = await base44.entities.DateCheckIn.filter({ user_id: profile.created_by_id });
             setCheckIns(cis.sort((a, b) => new Date(b.check_in_time) - new Date(a.check_in_time)));
           }}
+        />
+      )}
+
+      {showAlertForm && (
+        <SafetyAlertForm
+          reporterId={profile.created_by_id}
+          onClose={() => setShowAlertForm(false)}
+        />
+      )}
+
+      {showDispute && (
+        <SafetyAlertDispute
+          userId={profile.created_by_id}
+          onClose={() => setShowDispute(false)}
         />
       )}
     </div>

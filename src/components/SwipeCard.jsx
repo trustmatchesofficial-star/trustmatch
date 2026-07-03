@@ -1,6 +1,7 @@
 import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck } from 'lucide-react';
 import TrustScoreBadge from './TrustScoreBadge';
 import VerifiedBadge from './VerifiedBadge';
+import SafetyCheckBanner from './SafetyCheckBanner';
 
 export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
   if (!profile) return null;
@@ -39,6 +40,9 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
 
         {/* Bottom info */}
         <div className="absolute bottom-0 inset-x-0 p-5 text-white">
+          {/* Safety check banner (private, non-identifying) */}
+          <SafetyCheckBanner subjectName={profile.full_name} />
+
           <div className="flex items-center justify-between mb-1">
             <h2 className="text-2xl font-bold">{profile.full_name}, {profile.age}</h2>
             <div className="flex items-center gap-1.5">

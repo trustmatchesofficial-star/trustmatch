@@ -3,7 +3,7 @@ import { useOutletContext, Navigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   Shield, Flag, CheckCircle, XCircle, Users, AlertTriangle, Clock, BadgeCheck,
-  IdCard, MessageSquareWarning, Ban, UserX, UserCheck, ShieldAlert,
+  IdCard, MessageSquareWarning, Ban, UserX, UserCheck, ShieldAlert, ShieldCheck, FileText,
 } from 'lucide-react';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 
@@ -13,6 +13,7 @@ export default function Admin() {
   const [profiles, setProfiles] = useState([]);
   const [verifications, setVerifications] = useState([]);
   const [messages, setMessages] = useState({});
+  const [safetyAlerts, setSafetyAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('reports');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -22,14 +23,16 @@ export default function Admin() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allReports, allProfiles, allVerifications] = await Promise.all([
+      const [allReports, allProfiles, allVerifications, allAlerts] = await Promise.all([
         base44.entities.Report.list('-created_date', 100),
         base44.entities.Profile.list('-created_date', 100),
         base44.entities.VerificationRequest.list('-created_date', 100),
+        base44.entities.SafetyAlert.list('-created_date', 100),
       ]);
       setReports(allReports);
       setProfiles(allProfiles);
       setVerifications(allVerifications);
+      setSafetyAlerts(allAlerts);
 
       const flagged = allReports.filter((r) => r.message_id);
       const msgMap = {};
@@ -103,6 +106,54 @@ export default function Admin() {
     } catch (err) { console.error(err); }
   };
 
+  const handleAlertAction = async (alert, action) => {
+    try {
+      if (action === 'approve') {
+        await base44.entities.SafetyAlert.update(alert.id, {
+          status: 'approved',
+          review_note: notes[alert.id] || undefined,
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+          dispute_status: alert.dispute_status === 'disputed' ? 'resolved' : alert.dispute_status,
+        });
+      } else if (action === 'reject') {
+        await base44.entities.SafetyAlert.update(alert.id, {
+          status: 'rejected',
+          review_note: notes[alert.id] || undefined,
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+        });
+      } else if (action === 'request_info') {
+        await base44.entities.SafetyAlert.update(alert.id, {
+          status: 'pending_review',
+          review_note: notes[alert.id] || 'More information requested.',
+        });
+      } else if (action === 'remove') {
+        await base44.entities.SafetyAlert.update(alert.id, {
+          status: 'removed',
+          review_note: notes[alert.id] || undefined,
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+          dispute_status: 'resolved',
+        });
+      }
+      loadData();
+    } catch (err) { console.error(err); }
+  };
+
+  const handleAlertDisputeResolve = async (alert, keepApproved) => {
+    try {
+      await base44.entities.SafetyAlert.update(alert.id, {
+        dispute_status: 'resolved',
+        status: keepApproved ? 'approved' : 'removed',
+        review_note: (notes[alert.id] || '') + (keepApproved ? ' [Dispute reviewed: alert upheld]' : ' [Dispute reviewed: alert removed]'),
+        reviewed_by_id: profile?.created_by_id,
+        reviewed_at: new Date().toISOString(),
+      });
+      loadData();
+    } catch (err) { console.error(err); }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
@@ -111,12 +162,15 @@ export default function Admin() {
 
   const pendingReports = reports.filter((r) => r.status === 'pending');
   const pendingVerifications = verifications.filter((v) => v.status === 'pending');
+  const pendingAlerts = safetyAlerts.filter((a) => a.status === 'pending_review');
+  const disputedAlerts = safetyAlerts.filter((a) => a.dispute_status === 'disputed');
   const flaggedReports = reports.filter((r) => r.message_id || r.reason === 'scam' || r.reason === 'safety_concern');
   const suspendedCount = profiles.filter((p) => p.account_status === 'suspended' || p.account_status === 'banned').length;
 
   const tabs = [
     { key: 'reports', label: 'Reports', count: pendingReports.length, icon: Flag },
     { key: 'verifications', label: 'Verifications', count: pendingVerifications.length, icon: BadgeCheck },
+    { key: 'alerts', label: 'Safety Alerts', count: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
     { key: 'flagged', label: 'Flagged Messages', count: flaggedReports.length, icon: MessageSquareWarning },
     { key: 'users', label: 'Users', count: null, icon: Users },
   ];
@@ -124,11 +178,13 @@ export default function Admin() {
   const statusBadge = (status) => {
     const map = {
       pending: 'bg-gold/20 text-gold',
+      pending_review: 'bg-gold/20 text-gold',
       reviewing: 'bg-accent/20 text-accent-foreground',
       resolved: 'bg-teal/15 text-teal',
       dismissed: 'bg-secondary text-muted-foreground',
       approved: 'bg-teal/15 text-teal',
       rejected: 'bg-destructive/15 text-destructive',
+      removed: 'bg-destructive/15 text-destructive',
     };
     return map[status] || 'bg-secondary text-muted-foreground';
   };
@@ -203,13 +259,13 @@ export default function Admin() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
           {[
             { label: 'Total Users', value: profiles.length, icon: Users },
             { label: 'Open Reports', value: pendingReports.length, icon: Flag },
             { label: 'Verifications', value: pendingVerifications.length, icon: BadgeCheck },
+            { label: 'Safety Alerts', value: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
             { label: 'Flagged Msgs', value: flaggedReports.length, icon: MessageSquareWarning },
-            { label: 'Suspended', value: suspendedCount, icon: UserX },
           ].map(({ label, value, icon: Icon }) => (
             <div key={label} className="bg-card rounded-2xl border border-border p-4">
               <div className="flex items-center justify-between mb-2">
@@ -348,6 +404,142 @@ export default function Admin() {
                 );
               })
             )}
+          </div>
+        )}
+
+        {/* Safety Alerts */}
+        {tab === 'alerts' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-end gap-2">
+              {[
+                { key: 'pending', label: 'Pending' },
+                { key: 'disputed', label: 'Disputed' },
+                { key: 'approved', label: 'Approved' },
+                { key: 'all', label: 'All' },
+              ].map((m) => (
+                <button key={m.key} onClick={() => setFilterMode(m.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filterMode === m.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m.label}</button>
+              ))}
+            </div>
+            {(() => {
+              let filtered = safetyAlerts;
+              if (filterMode === 'pending') filtered = safetyAlerts.filter((a) => a.status === 'pending_review' && a.dispute_status !== 'disputed');
+              else if (filterMode === 'disputed') filtered = safetyAlerts.filter((a) => a.dispute_status === 'disputed');
+              else if (filterMode === 'approved') filtered = safetyAlerts.filter((a) => a.status === 'approved');
+              if (filtered.length === 0) {
+                return (
+                  <div className="text-center py-16">
+                    <ShieldCheck className="text-muted-foreground mx-auto mb-3" size={36} />
+                    <p className="text-muted-foreground">No {filterMode === 'all' ? 'safety alerts' : filterMode} alerts to review.</p>
+                  </div>
+                );
+              }
+              return filtered.map((alert) => {
+                const reporter = profiles.find((p) => p.created_by_id === alert.reporter_id);
+                const CAT_LABELS = {
+                  catfishing: 'Catfishing / Fake Identity',
+                  harassment: 'Harassment / Stalking',
+                  violence_abuse: 'Violence / Abuse',
+                  scam_financial: 'Scam / Financial Fraud',
+                  hidden_relationship: 'Hidden Relationship / Infidelity',
+                  other: 'Other Safety Concern',
+                };
+                return (
+                  <div key={alert.id} className="bg-card rounded-2xl border border-border p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-gold/10 flex items-center justify-center shrink-0">
+                        <ShieldAlert className="text-gold" size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h3 className="font-semibold truncate">About: {alert.subject_full_name}</h3>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            {alert.dispute_status === 'disputed' && (
+                              <span className="text-[10px] font-bold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">DISPUTED</span>
+                            )}
+                            <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${statusBadge(alert.status === 'pending_review' ? 'pending' : alert.status)}`}>
+                              {alert.status === 'pending_review' ? 'pending' : alert.status}
+                            </span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground mb-1">
+                          Category: <span className="font-medium text-foreground">{CAT_LABELS[alert.category] || alert.category}</span>
+                        </p>
+                        {reporter && (
+                          <p className="text-xs text-muted-foreground">Submitted by {reporter.full_name} (confidential)</p>
+                        )}
+                        {alert.subject_phone_or_social_handle && (
+                          <p className="text-xs text-muted-foreground">Phone/handle: <span className="font-mono">{alert.subject_phone_or_social_handle}</span> (internal matching only)</p>
+                        )}
+                        <p className="text-sm text-foreground mt-2">{alert.details}</p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {alert.confirmed_personal_experience && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal/10 text-teal">Confirmed personal experience</span>
+                          )}
+                          {alert.subject_photo_url && (
+                            <button onClick={() => setSelectedImage(alert.subject_photo_url)} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition">View subject photo</button>
+                          )}
+                          {alert.evidence_url && (
+                            <a href={alert.evidence_url} target="_blank" rel="noreferrer" className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition flex items-center gap-1">
+                              <FileText size={10} /> View evidence
+                            </a>
+                          )}
+                        </div>
+                        {alert.review_note && (
+                          <p className="text-xs text-muted-foreground mt-2 italic">Admin note: {alert.review_note}</p>
+                        )}
+                        {alert.dispute_status === 'disputed' && alert.dispute_note && (
+                          <div className="mt-2 bg-destructive/5 border border-destructive/20 rounded-xl p-2.5">
+                            <p className="text-[10px] text-destructive uppercase tracking-wider mb-1">Dispute from subject</p>
+                            <p className="text-sm text-foreground">{alert.dispute_note}</p>
+                          </div>
+                        )}
+
+                        {(alert.status === 'pending_review' || alert.dispute_status === 'disputed') && (
+                          <>
+                            <input
+                              type="text"
+                              value={notes[alert.id] || ''}
+                              onChange={(e) => setNotes((n) => ({ ...n, [alert.id]: e.target.value }))}
+                              placeholder="Moderation note (optional)"
+                              className="w-full mt-3 mb-2 px-3 py-2 rounded-lg border border-input bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                            {alert.dispute_status === 'disputed' ? (
+                              <div className="flex flex-wrap gap-2">
+                                <button onClick={() => handleAlertDisputeResolve(alert, false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition">
+                                  <XCircle size={14} /> Remove Alert
+                                </button>
+                                <button onClick={() => handleAlertDisputeResolve(alert, true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal/15 text-teal text-sm font-semibold hover:bg-teal/25 transition">
+                                  <CheckCircle size={14} /> Uphold (keep visible)
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                <button onClick={() => handleAlertAction(alert, 'approve')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal/15 text-teal text-sm font-semibold hover:bg-teal/25 transition">
+                                  <CheckCircle size={14} /> Approve &amp; Publish
+                                </button>
+                                <button onClick={() => handleAlertAction(alert, 'request_info')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-semibold hover:bg-gold/25 transition">
+                                  <AlertTriangle size={14} /> Request More Info
+                                </button>
+                                <button onClick={() => handleAlertAction(alert, 'reject')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                                  <XCircle size={14} /> Reject
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {alert.status === 'approved' && alert.dispute_status !== 'disputed' && (
+                          <div className="flex flex-wrap gap-2 mt-3">
+                            <button onClick={() => handleAlertAction(alert, 'remove')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-sm font-medium hover:bg-destructive/20 transition">
+                              <XCircle size={14} /> Remove
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
 

@@ -1,0 +1,96 @@
+{
+  "name": "SafetyAlert",
+  "type": "object",
+  "properties": {
+    "reporter_id": {
+      "type": "string",
+      "description": "User who submitted the alert. Kept confidential \u2014 never shown to other users."
+    },
+    "subject_full_name": {
+      "type": "string",
+      "description": "Full name of the person the alert is about."
+    },
+    "subject_photo_url": {
+      "type": "string",
+      "description": "Optional photo of the subject for admin review only."
+    },
+    "subject_phone_or_social_handle": {
+      "type": "string",
+      "description": "Phone or social handle of the subject. Used only for internal matching, never shown publicly."
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "catfishing",
+        "harassment",
+        "violence_abuse",
+        "scam_financial",
+        "hidden_relationship",
+        "other"
+      ],
+      "default": "other"
+    },
+    "details": {
+      "type": "string",
+      "description": "Description of what happened."
+    },
+    "evidence_url": {
+      "type": "string",
+      "description": "Optional evidence upload (screenshots etc). Admin-only."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "approved",
+        "rejected",
+        "removed"
+      ],
+      "default": "pending_review"
+    },
+    "confirmed_personal_experience": {
+      "type": "boolean",
+      "default": false,
+      "description": "Submitter confirmed they have direct personal experience with this person."
+    },
+    "review_note": {
+      "type": "string",
+      "description": "Admin moderation note."
+    },
+    "reviewed_by_id": {
+      "type": "string",
+      "description": "Admin who reviewed the alert."
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "dispute_status": {
+      "type": "string",
+      "enum": [
+        "none",
+        "disputed",
+        "resolved"
+      ],
+      "default": "none"
+    },
+    "dispute_note": {
+      "type": "string",
+      "description": "Subject's explanation of why the alert is inaccurate."
+    },
+    "disputed_by_id": {
+      "type": "string"
+    },
+    "disputed_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "reporter_id",
+    "subject_full_name",
+    "category",
+    "details",
+    "status"
+  ]
+}
