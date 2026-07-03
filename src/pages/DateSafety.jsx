@@ -12,6 +12,7 @@ export default function DateSafety() {
   const [loading, setLoading] = useState(true);
   const [locationOn, setLocationOn] = useState(false);
   const [audioOn, setAudioOn] = useState(false);
+  const [checkIns, setCheckIns] = useState([]);
 
   useEffect(() => {
     if (!profile || !matchId) return;
@@ -22,6 +23,8 @@ export default function DateSafety() {
         const otherId = m.user_a === profile.created_by_id ? m.user_b : m.user_a;
         const p = await base44.entities.Profile.get(otherId);
         setOtherProfile(p);
+        const cis = await base44.entities.DateCheckIn.filter({ match_id: matchId, user_id: profile.created_by_id });
+        setCheckIns(cis.sort((a, b) => new Date(a.check_in_time) - new Date(b.check_in_time)));
       } catch (err) {
         console.error(err);
       }
@@ -29,6 +32,13 @@ export default function DateSafety() {
     };
     load();
   }, [profile, matchId]);
+
+  const handleSafe = async (id) => {
+    try {
+      await base44.entities.DateCheckIn.update(id, { status: 'checked_in', checked_in_at: new Date().toISOString() });
+      setCheckIns((cs) => cs.filter((c) => c.id !== id));
+    } catch (err) { console.error(err); }
+  };
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -64,6 +74,41 @@ export default function DateSafety() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* Pending check-ins */}
+        {checkIns.length > 0 && (
+          <div className="bg-card rounded-3xl border border-teal/30 p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <Shield size={18} className="text-teal" />
+              <h3 className="font-bold text-foreground">Check in when you're safe</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Tap "I'm safe" once you've arrived. If you don't check in by the planned time, we'll send a gentle alert to your emergency contact.
+            </p>
+            <div className="space-y-2">
+              {checkIns.map((c) => {
+                const overdue = new Date(c.check_in_time) < new Date();
+                return (
+                  <div key={c.id} className="bg-secondary/50 rounded-2xl p-3 flex items-center gap-3">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{c.location_note || 'Date check-in'}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Check in by {new Date(c.check_in_time).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                      </p>
+                      {overdue && <p className="text-xs text-gold mt-0.5">Overdue — alert pending</p>}
+                    </div>
+                    <button
+                      onClick={() => handleSafe(c.id)}
+                      className="px-4 py-2 rounded-full bg-teal text-accent-foreground text-sm font-semibold hover:bg-teal/90 transition shrink-0"
+                    >
+                      I'm safe
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Location Tracker */}
         <div className="bg-card rounded-3xl border border-border p-5">
           <div className="flex items-center justify-between mb-4">

@@ -18,14 +18,15 @@ Deno.serve(async (req) => {
         try {
           await base44.asServiceRole.integrations.Core.SendEmail({
             to: setting.emergency_contact_email,
-            subject: 'Trust Matches Safety Alert — missed check-in',
+            subject: 'A gentle check-in regarding ' + (profile?.full_name || 'your contact'),
             body:
-              'Hi ' + (setting.emergency_contact_name || '') + ',\n\n' +
+              'Hi ' + (setting.emergency_contact_name || 'there') + ',\n\n' +
               (profile?.full_name || 'A Trust Matches member') +
-              " scheduled a date check-in but hasn't checked in by the expected time. Please reach out to make sure they're safe.\n\n" +
-              'Date scheduled: ' + (c.date_at || 'n/a') + '\n' +
+              " set a safety check-in for a date and hasn't marked themselves safe by the planned time. " +
+              "This is just a gentle nudge — they may have simply forgotten, but we wanted to let you know so you can reach out and check they're okay.\n\n" +
+              'Date scheduled: ' + (c.date_at ? new Date(c.date_at).toLocaleString() : 'n/a') + '\n' +
               'Location note: ' + (c.location_note || 'n/a') + '\n\n' +
-              'This alert was sent automatically by Trust Matches Safety.',
+              "If they're safe, no further action is needed. This message was sent automatically by Trust Matches Safety.",
           });
         } catch (e) {}
       }
