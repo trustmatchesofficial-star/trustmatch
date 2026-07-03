@@ -17,7 +17,7 @@ export default function Admin() {
   const [tab, setTab] = useState('reports');
   const [selectedImage, setSelectedImage] = useState(null);
   const [notes, setNotes] = useState({});
-  const [showAll, setShowAll] = useState(false);
+  const [filterMode, setFilterMode] = useState('pending');
 
   const loadData = async () => {
     setLoading(true);
@@ -62,10 +62,22 @@ export default function Admin() {
     } catch (err) { console.error(err); }
   };
 
+  const handleVerificationFlag = async (req) => {
+    try {
+      await base44.entities.VerificationRequest.update(req.id, {
+        status: 'reviewing',
+        review_note: notes[req.id] || undefined,
+      });
+      loadData();
+    } catch (err) { console.error(err); }
+  };
+
   const handleReportAction = async (report, action) => {
     try {
       const reportedProfile = profiles.find((p) => p.id === report.reported_id);
-      if (action === 'dismiss') {
+      if (action === 'flag') {
+        await base44.entities.Report.update(report.id, { status: 'reviewing' });
+      } else if (action === 'dismiss') {
         await base44.entities.Report.update(report.id, { status: 'dismissed', action_taken: 'none' });
       } else if (action === 'warn') {
         await base44.entities.Report.update(report.id, { status: 'resolved', action_taken: 'warned' });
@@ -157,10 +169,13 @@ export default function Admin() {
                 <p className="text-sm text-foreground">{msg.content}</p>
               </div>
             )}
-            {report.status === 'pending' && (
+            {(report.status === 'pending' || report.status === 'reviewing') && (
               <div className="flex flex-wrap gap-2 mt-3">
                 <button onClick={() => handleReportAction(report, 'suspend')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition">
                   <CheckCircle size={14} /> Approve
+                </button>
+                <button onClick={() => handleReportAction(report, 'flag')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-semibold hover:bg-gold/25 transition">
+                  <AlertTriangle size={14} /> Flag for investigation
                 </button>
                 <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
                   <XCircle size={14} /> Reject
@@ -230,16 +245,17 @@ export default function Admin() {
         {tab === 'reports' && (
           <div className="space-y-3">
             <div className="flex items-center justify-end gap-2">
-              <button onClick={() => setShowAll(false)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${!showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Pending</button>
-              <button onClick={() => setShowAll(true)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>All</button>
+              {['pending', 'flagged', 'all'].map((m) => (
+                <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m === 'flagged' ? 'Flagged' : m}</button>
+              ))}
             </div>
-            {(showAll ? reports : reports.filter((r) => r.status === 'pending')).length === 0 ? (
+            {(filterMode === 'all' ? reports : filterMode === 'flagged' ? reports.filter((r) => r.status === 'reviewing') : reports.filter((r) => r.status === 'pending')).length === 0 ? (
               <div className="text-center py-16">
                 <CheckCircle className="text-muted-foreground mx-auto mb-3" size={36} />
-                <p className="text-muted-foreground">{showAll ? 'No reports to review.' : 'No pending reports. All caught up!'}</p>
+                <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No reports to review.' : 'No pending reports. All caught up!'}</p>
               </div>
             ) : (
-              (showAll ? reports : reports.filter((r) => r.status === 'pending')).map(renderReport)
+              (filterMode === 'all' ? reports : filterMode === 'flagged' ? reports.filter((r) => r.status === 'reviewing') : reports.filter((r) => r.status === 'pending')).map(renderReport)
             )}
           </div>
         )}
@@ -248,16 +264,17 @@ export default function Admin() {
         {tab === 'verifications' && (
           <div className="space-y-3">
             <div className="flex items-center justify-end gap-2">
-              <button onClick={() => setShowAll(false)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${!showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>Pending</button>
-              <button onClick={() => setShowAll(true)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${showAll ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>All</button>
+              {['pending', 'flagged', 'all'].map((m) => (
+                <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m === 'flagged' ? 'Flagged' : m}</button>
+              ))}
             </div>
-            {(showAll ? verifications : verifications.filter((v) => v.status === 'pending')).length === 0 ? (
+            {(filterMode === 'all' ? verifications : filterMode === 'flagged' ? verifications.filter((v) => v.status === 'reviewing') : verifications.filter((v) => v.status === 'pending')).length === 0 ? (
               <div className="text-center py-16">
                 <BadgeCheck className="text-muted-foreground mx-auto mb-3" size={36} />
-                <p className="text-muted-foreground">{showAll ? 'No verification requests.' : 'No pending verifications. All caught up!'}</p>
+                <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No verification requests.' : 'No pending verifications. All caught up!'}</p>
               </div>
             ) : (
-              (showAll ? verifications : verifications.filter((v) => v.status === 'pending')).map((req) => {
+              (filterMode === 'all' ? verifications : filterMode === 'flagged' ? verifications.filter((v) => v.status === 'reviewing') : verifications.filter((v) => v.status === 'pending')).map((req) => {
                 const userProfile = profiles.find((p) => p.created_by_id === req.user_id);
                 return (
                   <div key={req.id} className="bg-card rounded-2xl border border-border p-4">
@@ -303,18 +320,21 @@ export default function Admin() {
                           </div>
                         )}
                         {req.review_note && <p className="text-sm text-muted-foreground mb-2">Note: {req.review_note}</p>}
-                        {req.status === 'pending' && (
+                        {(req.status === 'pending' || req.status === 'reviewing') && (
                           <>
                             <input
                               type="text"
                               value={notes[req.id] || ''}
                               onChange={(e) => setNotes((n) => ({ ...n, [req.id]: e.target.value }))}
-                              placeholder="Review note (optional)"
+                              placeholder={req.status === 'reviewing' ? 'Investigation notes (optional)' : 'Review note (optional)'}
                               className="w-full mb-2 px-3 py-2 rounded-lg border border-input bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
                             />
-                            <div className="flex gap-2">
+                            <div className="flex flex-wrap gap-2">
                               <button onClick={() => handleVerification(req, true)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal/15 text-teal text-sm font-medium hover:bg-teal/25 transition">
                                 <CheckCircle size={14} /> Approve
+                              </button>
+                              <button onClick={() => handleVerificationFlag(req)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-medium hover:bg-gold/25 transition">
+                                <AlertTriangle size={14} /> Flag for investigation
                               </button>
                               <button onClick={() => handleVerification(req, false)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-sm font-medium hover:bg-destructive/20 transition">
                                 <XCircle size={14} /> Reject
