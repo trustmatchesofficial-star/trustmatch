@@ -14,6 +14,7 @@ export default function Settings() {
   const [showVerify, setShowVerify] = useState(false);
   const [showLive, setShowLive] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [exportSent, setExportSent] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -241,15 +242,10 @@ export default function Settings() {
             <button
               onClick={async () => {
                 setExporting(true);
+                setExportSent(false);
                 try {
-                  const res = await base44.functions.invoke('exportMyData', {});
-                  const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'my-trustmatches-data.json';
-                  a.click();
-                  URL.revokeObjectURL(url);
+                  await base44.functions.invoke('exportMyData', {});
+                  setExportSent(true);
                 } catch (err) {
                   console.error(err);
                 }
@@ -260,7 +256,9 @@ export default function Settings() {
             >
               <div className="flex items-center gap-2">
                 <Download size={16} className="text-muted-foreground" />
-                <span className="text-sm">{exporting ? 'Preparing...' : 'Download my data'}</span>
+                <span className="text-sm">
+                  {exporting ? 'Sending...' : exportSent ? 'Data sent to your email ✓' : 'Email me my data'}
+                </span>
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
             </button>

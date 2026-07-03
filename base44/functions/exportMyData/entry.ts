@@ -41,15 +41,48 @@ Deno.serve(async (req) => {
       safety_alerts_submitted: alerts,
     };
 
-    const json = JSON.stringify(data, null, 2);
+    // Email the data to the user
+    const body =
+      'Hi ' + (user.full_name || 'there') + ',\n\n' +
+      'Here is a copy of all your data from Trust Matches, as requested.\n\n' +
+      '---\n\n' +
+      'PROFILE\n' +
+      (data.profile ? JSON.stringify(data.profile, null, 2) : 'No profile found') + '\n\n' +
+      'SAFETY SETTINGS\n' +
+      (data.safety_settings ? JSON.stringify(data.safety_settings, null, 2) : 'None') + '\n\n' +
+      'LIKES (' + data.likes.length + ')\n' +
+      (data.likes.length ? JSON.stringify(data.likes, null, 2) : 'None') + '\n\n' +
+      'MATCHES (' + data.matches.length + ')\n' +
+      (data.matches.length ? JSON.stringify(data.matches, null, 2) : 'None') + '\n\n' +
+      'MESSAGES SENT (' + data.messages_sent.length + ')\n' +
+      (data.messages_sent.length ? JSON.stringify(data.messages_sent, null, 2) : 'None') + '\n\n' +
+      'BLOCKS (' + data.blocks.length + ')\n' +
+      (data.blocks.length ? JSON.stringify(data.blocks, null, 2) : 'None') + '\n\n' +
+      'REPORTS SUBMITTED (' + data.reports_submitted.length + ')\n' +
+      (data.reports_submitted.length ? JSON.stringify(data.reports_submitted, null, 2) : 'None') + '\n\n' +
+      'DATE CHECK-INS (' + data.date_check_ins.length + ')\n' +
+      (data.date_check_ins.length ? JSON.stringify(data.date_check_ins, null, 2) : 'None') + '\n\n' +
+      'DATE FEEDBACK (' + data.date_feedback.length + ')\n' +
+      (data.date_feedback.length ? JSON.stringify(data.date_feedback, null, 2) : 'None') + '\n\n' +
+      'NOTIFICATIONS (' + data.notifications.length + ')\n' +
+      (data.notifications.length ? JSON.stringify(data.notifications, null, 2) : 'None') + '\n\n' +
+      'SUBSCRIPTIONS (' + data.subscriptions.length + ')\n' +
+      (data.subscriptions.length ? JSON.stringify(data.subscriptions, null, 2) : 'None') + '\n\n' +
+      'VERIFICATION REQUESTS (' + data.verification_requests.length + ')\n' +
+      (data.verification_requests.length ? JSON.stringify(data.verification_requests, null, 2) : 'None') + '\n\n' +
+      'SAFETY ALERTS SUBMITTED (' + data.safety_alerts_submitted.length + ')\n' +
+      (data.safety_alerts_submitted.length ? JSON.stringify(data.safety_alerts_submitted, null, 2) : 'None') + '\n\n' +
+      '---\n\n' +
+      'Exported at: ' + data.exported_at + '\n' +
+      'If you did not request this, you can safely ignore this email.';
 
-    return new Response(json, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': 'attachment; filename="my-trustmatches-data.json"',
-      },
+    await base44.integrations.Core.SendEmail({
+      to: user.email,
+      subject: 'Your Trust Matches data export',
+      body,
     });
+
+    return Response.json({ ok: true, sent_to: user.email });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
