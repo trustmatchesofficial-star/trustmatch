@@ -8,6 +8,7 @@ import DateCheckInScheduler from '@/components/DateCheckInScheduler';
 import PostDateFeedbackModal from '@/components/PostDateFeedbackModal';
 import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar, Star } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
+import ReportModal from '@/components/ReportModal';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SafetyCheckBanner from '@/components/SafetyCheckBanner';
 
@@ -24,6 +25,7 @@ export default function Chat() {
   const [isBlockedByMe, setIsBlockedByMe] = useState(false);
   const [isBlockedByThem, setIsBlockedByThem] = useState(false);
   const [blockTarget, setBlockTarget] = useState(null);
+  const [reportTarget, setReportTarget] = useState(null);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   const messagesEndRef = useRef(null);
@@ -76,23 +78,6 @@ export default function Chat() {
     }
   };
 
-  const handleReport = async () => {
-    if (!otherProfile || !profile) return;
-    try {
-      await base44.entities.Report.create({
-        reporter_id: profile.created_by_id,
-        reported_id: otherProfile.id,
-        reason: 'other',
-        details: 'Reported from chat',
-        status: 'pending',
-      });
-      alert('Report submitted. Our team will review it.');
-    } catch (err) {
-      console.error(err);
-    }
-    setShowMenu(false);
-  };
-
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
@@ -118,6 +103,13 @@ export default function Chat() {
           </div>
           <p className="text-xs text-green-500">Active now</p>
         </div>
+        <button
+          onClick={() => setReportTarget(otherProfile)}
+          className="p-2 hover:bg-destructive/10 hover:text-destructive rounded-full transition text-muted-foreground"
+          title="Report suspicious activity"
+        >
+          <Flag size={20} />
+        </button>
         <div className="relative">
           <button onClick={() => setShowMenu(!showMenu)} className="p-2 hover:bg-secondary rounded-full transition">
             <MoreVertical size={20} />
@@ -129,9 +121,6 @@ export default function Chat() {
               </button>
               <button onClick={() => { setShowFeedback(true); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gold hover:bg-secondary transition">
                 <Star size={16} /> Leave date feedback
-              </button>
-              <button onClick={handleReport} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-secondary transition">
-                <Flag size={16} /> Report User
               </button>
               <button onClick={() => { setBlockTarget(otherProfile); setShowMenu(false); }} className="w-full flex items-center gap-2 px-4 py-2 text-sm text-destructive hover:bg-secondary transition">
                 <Ban size={16} /> Block User
@@ -207,6 +196,11 @@ export default function Chat() {
         blockerId={profile?.created_by_id}
         onClose={() => setBlockTarget(null)}
         onBlocked={() => setIsBlockedByMe(true)}
+      />
+      <ReportModal
+        reportedProfile={reportTarget}
+        reporterId={profile?.created_by_id}
+        onClose={() => setReportTarget(null)}
       />
       <PanicButton profile={profile} variant="fab" />
       {showCheckIn && (
