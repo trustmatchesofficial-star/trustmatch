@@ -97,6 +97,12 @@ export default function Discover() {
             is_read: true,
           });
           setMatch(current);
+          try {
+            const meScore = Math.min(90, (profile.trust_score || 50) + 2);
+            const themScore = Math.min(90, (current.trust_score || 50) + 2);
+            await base44.entities.Profile.update(profile.id, { trust_score: meScore });
+            await base44.entities.Profile.update(current.id, { trust_score: themScore });
+          } catch (e) {}
         }
       }
     } catch (err) {

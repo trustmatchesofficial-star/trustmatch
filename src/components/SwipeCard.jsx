@@ -1,4 +1,5 @@
 import { BadgeCheck, MapPin, Flag, Ban } from 'lucide-react';
+import TrustScoreBadge from './TrustScoreBadge';
 
 export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
   if (!profile) return null;
@@ -62,6 +63,10 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
               <MapPin size={12} className="text-teal" /> {profile.location} · 2 km away
             </p>
           )}
+
+          <div className="mb-2">
+            <TrustScoreBadge profile={profile} size="sm" />
+          </div>
 
           {profile.bio && (
             <p className="text-sm text-white/80 mb-3 line-clamp-2">{profile.bio}</p>
