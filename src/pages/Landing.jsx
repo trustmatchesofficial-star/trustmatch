@@ -6,7 +6,9 @@ import LandingHeader from '@/components/landing/LandingHeader';
 import LandingHero from '@/components/landing/LandingHero';
 import LandingFeatures from '@/components/landing/LandingFeatures';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
-import LandingSafety from '@/components/landing/LandingSafety';
+import LandingDateSafetyTracker from '@/components/landing/LandingDateSafetyTracker';
+import LandingSafetyGrid from '@/components/landing/LandingSafetyGrid';
+import LandingSafetyBanner from '@/components/landing/LandingSafetyBanner';
 import LandingTestimonials from '@/components/landing/LandingTestimonials';
 import LandingFAQ from '@/components/landing/LandingFAQ';
 import LandingFooter from '@/components/landing/LandingFooter';
@@ -34,7 +36,9 @@ export default function Landing() {
       <LandingHero />
       <LandingFeatures />
       <LandingHowItWorks />
-      <LandingSafety />
+      <LandingDateSafetyTracker />
+      <LandingSafetyGrid />
+      <LandingSafetyBanner />
       <LandingTestimonials />
       <LandingFAQ />
       <LandingFooter />
