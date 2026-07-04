@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingHero from '@/components/landing/LandingHero';
+import LandingFoundingMember from '@/components/landing/LandingFoundingMember';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
 import LandingDateSafetyTracker from '@/components/landing/LandingDateSafetyTracker';
 import LandingSafetyGrid from '@/components/landing/LandingSafetyGrid';
@@ -41,6 +42,7 @@ export default function Landing() {
         className="w-full h-auto"
       />
       <LandingHero />
+      <LandingFoundingMember />
       <LandingStats />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />
