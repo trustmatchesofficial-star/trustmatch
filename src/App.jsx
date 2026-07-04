@@ -25,6 +25,7 @@ import LikedYou from '@/pages/LikedYou';
 import Admin from '@/pages/Admin';
 import OnboardingDashboard from '@/pages/OnboardingDashboard';
 import SafetyHub from '@/pages/SafetyHub';
+import SafetyInsights from '@/pages/SafetyInsights';
 import Settings from '@/pages/Settings';
 import SafetyCenter from '@/pages/SafetyCenter';
 import DateSafety from '@/pages/DateSafety';
@@ -70,6 +71,7 @@ const AuthenticatedApp = () => {
           <Route path="/premium" element={<Premium />} />
           <Route path="/liked-you" element={<LikedYou />} />
           <Route path="/safety-hub" element={<SafetyHub />} />
+          <Route path="/safety-insights" element={<SafetyInsights />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/safety-center" element={<SafetyCenter />} />
           <Route path="/date-safety/:matchId" element={<DateSafety />} />

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Shield, MapPin, Lock, Star, BadgeCheck, ShieldCheck } from 'lucide-react';
+import { Shield, MapPin, Lock, Star, BadgeCheck, ShieldCheck, Activity, ChevronRight } from 'lucide-react';
 
 export default function SafetyHub() {
   const features = [
@@ -87,6 +87,18 @@ export default function SafetyHub() {
             <span className="text-sm font-medium">Verification</span>
           </Link>
         </div>
+
+        {/* Safety Insights link */}
+        <Link to="/safety-insights" className="bg-card rounded-2xl border border-primary/30 p-5 mb-6 flex items-center gap-4 hover:border-primary/50 transition group">
+          <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Activity className="text-primary" size={22} />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold mb-0.5">Safety Insights Dashboard</h3>
+            <p className="text-sm text-muted-foreground">View your comfort rating trends and check-in history.</p>
+          </div>
+          <ChevronRight className="text-muted-foreground group-hover:text-primary transition" size={20} />
+        </Link>
 
         {/* Safety banner */}
         <div className="bg-card rounded-3xl border border-teal/30 p-6 text-center">
