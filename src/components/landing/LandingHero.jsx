@@ -36,6 +36,10 @@ export default function LandingHero() {
             Every profile verified. Every date, a little safer. TrustMatch is dating that feels good and has your back.
           </p>
 
+          <p className="text-sm md:text-base text-foreground/70 leading-relaxed max-w-xl mx-auto mt-3 italic">
+            Know who you're really talking to before you meet, pay, or trust.
+          </p>
+
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
             <Link
               to="/register"

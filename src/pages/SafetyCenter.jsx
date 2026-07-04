@@ -9,6 +9,7 @@ import PanicButton from '@/components/PanicButton';
 import DateCheckInScheduler from '@/components/DateCheckInScheduler';
 import SafetyAlertForm from '@/components/SafetyAlertForm';
 import SafetyAlertDispute from '@/components/SafetyAlertDispute';
+import TrustScoreLegend from '@/components/TrustScoreLegend';
 
 const ESCALATION_MODES = [
   { value: 'notify_contact', label: 'Notify my emergency contact', desc: 'We email your contact and our safety team.' },
@@ -119,6 +120,11 @@ export default function SafetyCenter() {
             <h1 className="text-2xl font-heading font-bold">Safety Center</h1>
             <p className="text-xs text-muted-foreground">Tools to keep you safe, before, during, and after a date.</p>
           </div>
+        </div>
+
+        {/* Trust Score legend */}
+        <div className="mb-6">
+          <TrustScoreLegend />
         </div>
 
         {/* Emergency contact */}
