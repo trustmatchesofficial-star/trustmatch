@@ -6,6 +6,7 @@ import MessageSafetyBanner, { detectUnsafe } from '@/components/MessageSafetyBan
 import PanicButton from '@/components/PanicButton';
 import DateCheckInScheduler from '@/components/DateCheckInScheduler';
 import PostDateFeedbackModal from '@/components/PostDateFeedbackModal';
+import PostMatchFeedbackPopup from '@/components/PostMatchFeedbackPopup';
 import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar, Star, Video } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
 import ReportModal from '@/components/ReportModal';
@@ -255,6 +256,13 @@ export default function Chat() {
           profile={profile}
           otherProfile={otherProfile}
           onClose={() => setShowVideoCall(false)}
+        />
+      )}
+      {messages.length >= 5 && otherProfile && profile && (
+        <PostMatchFeedbackPopup
+          profile={profile}
+          matchId={matchId}
+          otherProfile={otherProfile}
         />
       )}
     </div>
