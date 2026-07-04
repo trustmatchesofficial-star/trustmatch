@@ -109,6 +109,20 @@
       "type": "boolean",
       "default": false,
       "description": "Whether the user has been sent an automated warning email for receiving multiple safety reports."
+    },
+    "is_founding_member": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this user joined as one of the first 100 members and received free premium access."
+    },
+    "founding_member_number": {
+      "type": "number",
+      "description": "Sequential number (1-100) assigned to founding members. Null for non-founding members."
+    },
+    "premium_free_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the free premium access from the founding member promo expires. Null for non-founding members."
     }
   },
   "required": [

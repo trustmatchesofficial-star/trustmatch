@@ -5,6 +5,7 @@ import { MapPin, BadgeCheck, Heart, Edit3, Camera, X, Check, Crown, ShieldCheck,
 import VerificationModal from '@/components/VerificationModal';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import FoundingMemberBadge from '@/components/FoundingMemberBadge';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 
@@ -109,9 +110,10 @@ export default function ProfilePage() {
             {profile.location && <span className="flex items-center gap-1 text-sm"><MapPin size={14} /> {profile.location}</span>}
             <span className="text-sm capitalize">{profile.looking_for?.replace('_', ' ')}</span>
           </div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
             <TrustScoreBadge profile={profile} />
             {profile.is_verified && <VerifiedBadge size="sm" />}
+            {profile.is_founding_member && <FoundingMemberBadge number={profile.founding_member_number} size="sm" />}
           </div>
           {profile.is_live_verified && (
             <span className="inline-flex items-center gap-1 mt-2 bg-purplecustom/15 text-purplecustom px-3 py-1 rounded-full text-xs font-medium">

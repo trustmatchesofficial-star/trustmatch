@@ -1,7 +1,8 @@
-import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck, Crown } from 'lucide-react';
 import TrustScoreBadge from './TrustScoreBadge';
 import VerifiedBadge from './VerifiedBadge';
 import SafetyCheckBanner from './SafetyCheckBanner';
+import FoundingMemberBadge from './FoundingMemberBadge';
 
 export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
   if (!profile) return null;
@@ -76,6 +77,11 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
             {profile.is_verified && (
               <span className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-md text-white px-2 py-0.5 rounded-full text-[10px] font-semibold">
                 <ShieldCheck size={11} /> Identity Verified
+              </span>
+            )}
+            {profile.is_founding_member && (
+              <span className="inline-flex items-center gap-1 bg-gold/25 backdrop-blur-md text-gold px-2 py-0.5 rounded-full text-[10px] font-semibold border border-gold/40">
+                <Crown size={11} className="fill-gold" /> Founding Member{profile.founding_member_number ? ` #${profile.founding_member_number}` : ''}
               </span>
             )}
           </div>

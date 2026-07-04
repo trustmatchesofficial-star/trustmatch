@@ -1,7 +1,8 @@
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useState, useEffect } from 'react';
-import { Crown, Check, Sparkles, Heart, Eye, Star, Plane, Mic, Video, TrendingUp, Coins, Loader2, Lock } from 'lucide-react';
+import { Crown, Check, Sparkles, Heart, Eye, Star, Plane, Mic, Video, TrendingUp, Coins, Loader2, Lock, Award } from 'lucide-react';
+import FoundingMemberBadge from '@/components/FoundingMemberBadge';
 
 const PLANS = [
   {
@@ -147,7 +148,26 @@ export default function Premium() {
             <Crown className="text-accent" size={40} />
           </div>
           <h1 className="text-3xl font-heading font-bold mb-2">You're Premium!</h1>
-          <p className="text-muted-foreground mb-8">Enjoy unlimited likes, super likes, and all premium features.</p>
+          <p className="text-muted-foreground mb-4">Enjoy unlimited likes, super likes, and all premium features.</p>
+
+          {profile?.is_founding_member && profile?.premium_free_until && new Date(profile.premium_free_until) > new Date() && (
+            <div className="bg-gold/10 border border-gold/30 rounded-2xl p-4 mb-8 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gold/20 flex items-center justify-center shrink-0">
+                <Award size={20} className="text-gold" />
+              </div>
+              <div className="text-left">
+                <div className="mb-1">
+                  <FoundingMemberBadge number={profile.founding_member_number} size="sm" />
+                </div>
+                <p className="text-sm text-foreground/80">
+                  Premium free until{' '}
+                  <span className="font-semibold text-gold">
+                    {new Date(profile.premium_free_until).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                  </span>
+                </p>
+              </div>
+            </div>
+          )}
 
           {subscription?.status === 'active' && (
             <div className="bg-card rounded-2xl border border-accent/30 p-4 mb-6 flex items-center justify-between">
