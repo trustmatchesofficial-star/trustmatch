@@ -13,7 +13,7 @@
     },
     "id_document_url": {
       "type": "string",
-      "description": "Photo of passport/ID document submitted during verification."
+      "description": "Photo of passport/ID document submitted during verification. Required \u2014 no verification request can be created without it."
     },
     "status": {
       "type": "string",
@@ -38,6 +38,7 @@
   "required": [
     "user_id",
     "selfie_url",
+    "id_document_url",
     "status"
   ],
   "rls": {

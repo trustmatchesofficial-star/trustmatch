@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
-import { ArrowLeft, ArrowRight, Upload, X, Heart, Check } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Upload, X, Heart, Check, Camera, IdCard, ShieldCheck, Loader2 } from 'lucide-react';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 const LOOKING_FOR = [
@@ -19,6 +19,9 @@ export default function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [checking, setChecking] = useState(true);
   const [photos, setPhotos] = useState([]);
+  const [selfieUrl, setSelfieUrl] = useState(null);
+  const [idDocumentUrl, setIdDocumentUrl] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     full_name: user?.full_name || '',
     age: '',
@@ -69,10 +72,23 @@ export default function Onboarding() {
     }
   };
 
+  const handleVerifyUpload = async (e, setter) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setter(file_url);
+    } catch (err) {
+      console.error('Upload failed', err);
+    }
+    setUploading(false);
+  };
+
   const handleComplete = async () => {
     setSaving(true);
     try {
-      await base44.entities.Profile.create({
+      const profile = await base44.entities.Profile.create({
         ...form,
         age: Number(form.age),
         photos,
@@ -81,6 +97,14 @@ export default function Onboarding() {
         is_premium: false,
         credits: 0,
         is_active: true,
+      });
+      // Create the mandatory identity verification request.
+      // Nobody can complete onboarding without uploading a passport/ID.
+      await base44.entities.VerificationRequest.create({
+        user_id: user.id,
+        selfie_url: selfieUrl,
+        id_document_url: idDocumentUrl,
+        status: 'pending',
       });
       navigate('/discover');
     } catch (err) {
@@ -273,6 +297,71 @@ export default function Onboarding() {
                 className="flex-1 accent-primary"
               />
             </div>
+          </div>
+        </div>
+      ),
+    },
+    // Step 5: Mandatory identity verification (passport/ID + selfie)
+    {
+      title: 'Verify your identity',
+      subtitle: 'A passport or government ID and a selfie are required to join Trust Matches. This keeps the community real and safe.',
+      valid: selfieUrl && idDocumentUrl,
+      content: (
+        <div className="space-y-5">
+          <div className="flex items-center gap-2.5 p-3 rounded-xl bg-teal/10 border border-teal/30">
+            <ShieldCheck className="text-teal shrink-0" size={20} />
+            <p className="text-xs text-foreground leading-relaxed">
+              Your documents are used only for identity verification and are never shown on your profile.
+              You may cover sensitive details except your photo, name, and date of birth.
+            </p>
+          </div>
+
+          {/* Selfie upload */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+              <Camera size={16} className="text-primary" /> Selfie photo
+            </label>
+            {selfieUrl ? (
+              <div className="relative w-full max-w-[200px] aspect-[3/4] rounded-2xl overflow-hidden mx-auto">
+                <img src={selfieUrl} alt="Selfie" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => setSelfieUrl(null)}
+                  className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full hover:bg-black/80"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-8 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition">
+                {uploading ? <Loader2 size={28} className="text-muted-foreground animate-spin" /> : <Camera size={28} className="text-muted-foreground" />}
+                <span className="text-sm text-muted-foreground">{uploading ? 'Uploading...' : 'Tap to upload selfie'}</span>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleVerifyUpload(e, setSelfieUrl)} />
+              </label>
+            )}
+          </div>
+
+          {/* ID document upload */}
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 flex items-center gap-2">
+              <IdCard size={16} className="text-gold" /> Passport or government ID
+            </label>
+            {idDocumentUrl ? (
+              <div className="relative w-full max-w-[200px] aspect-[3/4] rounded-2xl overflow-hidden mx-auto">
+                <img src={idDocumentUrl} alt="ID Document" className="w-full h-full object-cover" />
+                <button
+                  onClick={() => setIdDocumentUrl(null)}
+                  className="absolute top-2 right-2 bg-black/60 text-white p-1.5 rounded-full hover:bg-black/80"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-2xl py-8 cursor-pointer hover:border-gold/50 hover:bg-gold/5 transition">
+                {uploading ? <Loader2 size={28} className="text-muted-foreground animate-spin" /> : <IdCard size={28} className="text-muted-foreground" />}
+                <span className="text-sm text-muted-foreground">{uploading ? 'Uploading...' : 'Tap to upload passport/ID'}</span>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => handleVerifyUpload(e, setIdDocumentUrl)} />
+              </label>
+            )}
           </div>
         </div>
       ),
