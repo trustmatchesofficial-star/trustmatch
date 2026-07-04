@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Shield, TrendingUp, CheckCircle2, Calendar, Activity, ArrowLeft, Star } from 'lucide-react';
+import { Shield, TrendingUp, CheckCircle2, Calendar, Activity, ArrowLeft, Star, Award } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from 'recharts';
 import { format, parseISO } from 'date-fns';
 
@@ -58,6 +58,30 @@ export default function SafetyInsights() {
       safety: f.safety_rating || null,
     }));
 
+  // Build cumulative running average data — shows how reputation builds over time
+  let runningComfortSum = 0;
+  let runningSafetySum = 0;
+  let runningSafetyCount = 0;
+  const progressData = [...receivedRatings]
+    .sort((a, b) => new Date(a.created_date) - new Date(b.created_date))
+    .map((f, i) => {
+      runningComfortSum += f.comfort_rating;
+      if (typeof f.safety_rating === 'number') {
+        runningSafetySum += f.safety_rating;
+        runningSafetyCount++;
+      }
+      return {
+        date: format(parseISO(f.created_date), 'dd MMM'),
+        comfortAvg: +(runningComfortSum / (i + 1)).toFixed(2),
+        safetyAvg: runningSafetyCount > 0 ? +(runningSafetySum / runningSafetyCount).toFixed(2) : null,
+      };
+    });
+
+  const latestComfort = progressData.length > 0 ? progressData[progressData.length - 1].comfortAvg : 0;
+  const latestSafety = progressData.length > 0 ? progressData[progressData.length - 1].safetyAvg : 0;
+  const reputationScore = latestComfort > 0 && latestSafety > 0 ? ((latestComfort + latestSafety) / 2) : (latestComfort || latestSafety || 0);
+  const reputationPercent = (reputationScore / 5) * 100;
+
   // Check-in history (last 10)
   const checkInHistory = checkIns.slice(0, 10).map((c) => ({
     date: c.check_in_time ? format(parseISO(c.check_in_time), 'dd MMM HH:mm') : '—',
@@ -110,6 +134,69 @@ export default function SafetyInsights() {
             <p className="text-2xl font-heading font-bold">{checkIns.length}</p>
             <p className="text-xs text-muted-foreground">Total check-ins</p>
           </div>
+        </div>
+
+        {/* Reputation progression chart */}
+        <div className="bg-card rounded-2xl border border-border p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Award size={18} className="text-gold" />
+              <h2 className="font-heading font-semibold">Reputation progression</h2>
+            </div>
+            {progressData.length > 0 && (
+              <div className="flex items-center gap-3 text-xs">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-primary" /> Comfort
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-teal" /> Safety
+                </span>
+              </div>
+            )}
+          </div>
+
+          {progressData.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No feedback yet. As your matches share post-date feedback, your reputation score will grow here over time.
+            </p>
+          ) : (
+            <>
+              {/* Progress bar */}
+              <div className="mb-5">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-medium">Current reputation</span>
+                  <span className="text-sm font-bold text-gold">{reputationScore.toFixed(1)} / 5.0</span>
+                </div>
+                <div className="h-3 rounded-full bg-secondary overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-primary via-gold to-teal transition-all duration-700"
+                    style={{ width: `${reputationPercent}%` }}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  Based on {progressData.length} review{progressData.length === 1 ? '' : 's'} · {reputationPercent.toFixed(0)}% of max
+                </p>
+              </div>
+
+              {/* Running average chart */}
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={progressData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <YAxis domain={[0, 5]} tick={{ fontSize: 10 }} stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip
+                    contentStyle={{ background: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: 12, fontSize: 12 }}
+                    formatter={(value) => [value, 'Avg']}
+                  />
+                  <Line type="monotone" dataKey="comfortAvg" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 3 }} name="Comfort avg" connectNulls />
+                  <Line type="monotone" dataKey="safetyAvg" stroke="hsl(var(--teal))" strokeWidth={2.5} dot={{ r: 3 }} name="Safety avg" connectNulls />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                Each point is your cumulative average up to that date — watch it climb as you build trust.
+              </p>
+            </>
+          )}
         </div>
 
         {/* Comfort trend chart */}
