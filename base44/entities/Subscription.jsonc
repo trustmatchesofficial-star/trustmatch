@@ -26,6 +26,28 @@
     "is_active": {
       "type": "boolean",
       "default": true
+    },
+    "checkout_id": {
+      "type": "string",
+      "description": "Wix checkout session ID \u2014 used to correlate the order_approved webhook to this record."
+    },
+    "subscription_id": {
+      "type": "string",
+      "description": "Wix subscription contract ID \u2014 stored from order_approved webhook, used to match canceled/expired webhooks."
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "active",
+        "canceled",
+        "expired"
+      ],
+      "default": "pending"
+    },
+    "buyer_email": {
+      "type": "string",
+      "description": "Email from the authenticated user's session at checkout creation. Authoritative \u2014 never overwritten with the buyer-typed checkout email."
     }
   },
   "required": [

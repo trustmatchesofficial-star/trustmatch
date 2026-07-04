@@ -1,7 +1,7 @@
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { useState } from 'react';
-import { Crown, Check, Sparkles, Heart, Eye, Star, Plane, Mic, Video, TrendingUp, Coins } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Crown, Check, Sparkles, Heart, Eye, Star, Plane, Mic, Video, TrendingUp, Coins, Loader2, Lock } from 'lucide-react';
 
 const PLANS = [
   {
@@ -9,16 +9,18 @@ const PLANS = [
     name: 'Monthly',
     price: '£9.99',
     period: '/month',
-    color: 'border-border',
-    badge: null,
+    color: 'border-primary',
+    badge: 'Premium',
+    real: true,
   },
   {
     id: 'quarterly',
     name: 'Quarterly',
     price: '$44.99',
     period: '/3 months',
-    color: 'border-accent',
-    badge: 'Most Popular',
+    color: 'border-border',
+    badge: null,
+    real: false,
   },
   {
     id: 'annual',
@@ -27,6 +29,7 @@ const PLANS = [
     period: '/year',
     color: 'border-border',
     badge: 'Best Value',
+    real: false,
   },
 ];
 
@@ -45,13 +48,52 @@ export default function Premium() {
   const { profile, setProfile } = useOutletContext();
   const navigate = useNavigate();
   const [subscribing, setSubscribing] = useState(null);
+  const [subscription, setSubscription] = useState(null);
+  const [loadingSub, setLoadingSub] = useState(true);
 
-  const handleSubscribe = async (planId) => {
+  const loadSubscription = async () => {
+    if (!profile) return;
+    try {
+      const subs = await base44.entities.Subscription.filter({ user_id: profile.created_by_id });
+      const sorted = subs.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      setSubscription(sorted[0] || null);
+
+      // If pending, poll for activation
+      if (sorted[0]?.status === 'pending') {
+        setTimeout(loadSubscription, 3000);
+      } else if (sorted[0]?.status === 'active' && !profile.is_premium) {
+        // Webhook activated the subscription but profile not yet refreshed
+        const updated = await base44.entities.Profile.get(profile.id);
+        setProfile(updated);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setLoadingSub(false);
+  };
+
+  useEffect(() => {
+    loadSubscription();
+  }, [profile]);
+
+  const handleCheckout = async () => {
+    setSubscribing('monthly');
+    try {
+      const res = await base44.functions.invoke('create-checkout', {});
+      if (res.data?.redirectUrl) {
+        window.location.href = res.data.redirectUrl;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setSubscribing(null);
+  };
+
+  const handleFakeSubscribe = async (planId) => {
     setSubscribing(planId);
     try {
       const expires = new Date();
-      if (planId === 'monthly') expires.setMonth(expires.getMonth() + 1);
-      else if (planId === 'quarterly') expires.setMonth(expires.getMonth() + 3);
+      if (planId === 'quarterly') expires.setMonth(expires.getMonth() + 3);
       else expires.setFullYear(expires.getFullYear() + 1);
 
       await base44.entities.Subscription.create({
@@ -60,6 +102,7 @@ export default function Premium() {
         credits_remaining: 5,
         expires_at: expires.toISOString(),
         is_active: true,
+        status: 'active',
       });
 
       const updated = await base44.entities.Profile.update(profile.id, {
@@ -73,6 +116,29 @@ export default function Premium() {
     setSubscribing(null);
   };
 
+  // Pending state — buyer returned from checkout, waiting for webhook
+  if (subscription?.status === 'pending' && !profile?.is_premium) {
+    return (
+      <div className="min-h-screen px-6 pt-6 pb-24 flex items-center justify-center">
+        <div className="max-w-md mx-auto text-center">
+          <div className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-4">
+            <Loader2 className="text-primary animate-spin" size={40} />
+          </div>
+          <h1 className="text-2xl font-heading font-bold mb-2">Confirming your payment…</h1>
+          <p className="text-muted-foreground mb-6">
+            We're activating your Premium subscription. This usually takes a few seconds. You can close this page — we'll activate your account automatically once payment is confirmed.
+          </p>
+          <button
+            onClick={loadSubscription}
+            className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-5 py-2.5 rounded-full font-medium text-sm hover:bg-secondary/80 transition"
+          >
+            <Loader2 size={16} className="animate-spin" /> Check again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (profile?.is_premium) {
     return (
       <div className="min-h-screen px-6 pt-6 pb-24">
@@ -81,7 +147,22 @@ export default function Premium() {
             <Crown className="text-accent" size={40} />
           </div>
           <h1 className="text-3xl font-heading font-bold mb-2">You're Premium!</h1>
-          <p className="text-muted-foreground mb-8">Enjoy unlimited likes, advanced filters, and more.</p>
+          <p className="text-muted-foreground mb-8">Enjoy unlimited likes, super likes, and all premium features.</p>
+
+          {subscription?.status === 'active' && (
+            <div className="bg-card rounded-2xl border border-accent/30 p-4 mb-6 flex items-center justify-between">
+              <div className="text-left">
+                <p className="text-xs text-muted-foreground">Subscription</p>
+                <p className="text-sm font-semibold capitalize">{subscription.plan}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-muted-foreground">Status</p>
+                <p className="text-sm font-semibold text-accent flex items-center gap-1">
+                  <Check size={14} /> Active
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="bg-card rounded-3xl border border-accent/30 p-6 mb-6">
             <div className="flex items-center justify-center gap-2 mb-4">
@@ -141,7 +222,7 @@ export default function Premium() {
               className={`bg-card rounded-3xl border-2 ${plan.color} p-6 relative ${plan.badge ? 'md:scale-105' : ''}`}
             >
               {plan.badge && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-accent text-accent-foreground px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">
                   {plan.badge}
                 </div>
               )}
@@ -151,22 +232,31 @@ export default function Premium() {
                 <span className="text-sm text-muted-foreground">{plan.period}</span>
               </div>
               <button
-                onClick={() => handleSubscribe(plan.id)}
-                disabled={subscribing === plan.id}
+                onClick={() => (plan.real ? handleCheckout() : handleFakeSubscribe(plan.id))}
+                disabled={subscribing === plan.id || (plan.real && subscribing === 'monthly')}
                 className={`w-full py-3 rounded-full font-semibold text-sm transition disabled:opacity-50 ${
-                  plan.badge
-                    ? 'bg-accent text-accent-foreground hover:bg-accent/90'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  plan.real
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : plan.badge
+                    ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
-                {subscribing === plan.id ? 'Processing...' : 'Choose Plan'}
+                {subscribing === plan.id || (plan.real && subscribing === 'monthly')
+                  ? 'Processing...'
+                  : plan.real
+                  ? 'Subscribe Now'
+                  : 'Choose Plan'}
               </button>
+              {!plan.real && (
+                <p className="text-[10px] text-muted-foreground mt-2 text-center">Coming soon</p>
+              )}
             </div>
           ))}
         </div>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Cancel anytime. By subscribing you agree to our Terms of Service.
+          Cancel anytime. Payments are processed securely by Base44 Payments. By subscribing you agree to our Terms of Service.
         </p>
       </div>
     </div>
