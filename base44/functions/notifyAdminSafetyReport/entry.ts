@@ -5,6 +5,19 @@ const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL') || 'admin@trustmatches.app';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Only the internal automation system (platform-authenticated) or an
+    // authenticated admin may invoke this endpoint.
+    const isAuthed = await base44.auth.isAuthenticated();
+    if (!isAuthed) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    let caller = null;
+    try { caller = await base44.auth.me(); } catch {}
+    if (caller && caller.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const svc = base44.asServiceRole;
 
     const payload = await req.json();
