@@ -7,22 +7,26 @@ export default function PanicButton({ profile, variant = 'full' }) {
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
   if (!profile) return null;
 
   const trigger = async () => {
     setSending(true);
+    setError(null);
     try {
       const res = await base44.functions.invoke('triggerPanic', { user_id: profile.created_by_id });
+      if (res.data?.error) throw new Error(res.data.error);
       setResult(res.data);
       setDone(true);
     } catch (err) {
       console.error(err);
+      setError(err.message || 'Something went wrong. Please try again or call 999 if in immediate danger.');
     }
     setSending(false);
   };
 
-  const reset = () => { setArmed(false); setDone(false); setResult(null); };
+  const reset = () => { setArmed(false); setDone(false); setResult(null); setError(null); };
 
   return (
     <>
@@ -73,6 +77,11 @@ export default function PanicButton({ profile, variant = 'full' }) {
                 <p className="text-muted-foreground text-sm text-center mb-6">
                   This will immediately alert your emergency contact and our safety team. Only use this in a real safety situation.
                 </p>
+                {error && (
+                  <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-xl p-3 text-center">
+                    <p className="text-destructive text-sm font-medium">{error}</p>
+                  </div>
+                )}
                 <div className="flex gap-3">
                   <button onClick={reset} className="flex-1 px-5 py-3 rounded-full bg-secondary text-secondary-foreground font-semibold text-sm">
                     Cancel
