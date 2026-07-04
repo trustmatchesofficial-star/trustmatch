@@ -376,14 +376,25 @@ export default function Discover() {
         {/* Actions */}
         {profiles.length > 0 && (
           <div className="flex items-center justify-center gap-4 pb-24 md:pb-8">
-            <button
-              onClick={handleRewind}
-              disabled={!lastSwiped}
-              className="w-12 h-12 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-primary hover:text-primary transition-all hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed"
-              title="Rewind last swipe"
-            >
-              <Undo2 size={22} />
-            </button>
+            {profile?.is_premium ? (
+              <button
+                onClick={handleRewind}
+                disabled={!lastSwiped}
+                className="w-12 h-12 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-primary hover:text-primary transition-all hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Rewind last swipe"
+              >
+                <Undo2 size={22} />
+              </button>
+            ) : (
+              <Link
+                to="/premium"
+                className="relative w-12 h-12 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-gold hover:text-gold transition-all hover:scale-105"
+                title="Premium feature: Rewind"
+              >
+                <Undo2 size={22} />
+                <Lock size={10} className="absolute -bottom-0.5 -right-0.5 text-gold bg-card rounded-full p-0.5 w-3.5 h-3.5" />
+              </Link>
+            )}
             <button
               onClick={() => handleSwipe('left')}
               className="w-14 h-14 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-destructive hover:text-destructive transition-all hover:scale-105"

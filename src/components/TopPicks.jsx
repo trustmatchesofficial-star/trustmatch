@@ -79,40 +79,54 @@ export default function TopPicks({ profile }) {
         )}
       </div>
 
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
-        {display.map((p) => {
-          const locked = !profile?.is_premium && !expanded;
-          return (
-            <div
-              key={p.id}
-              className={`relative shrink-0 w-28 h-40 rounded-2xl overflow-hidden border border-border ${locked ? 'blur-[6px]' : ''}`}
-            >
-              <img
-                src={p.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300`}
-                alt={p.full_name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <div className="absolute bottom-0 inset-x-0 p-2 text-white">
-                <p className="text-xs font-bold truncate">{p.full_name}, {p.age}</p>
-                <TrustScoreBadge profile={p} size="xs" />
-              </div>
-              {p.is_verified && (
-                <div className="absolute top-1.5 right-1.5 bg-gold/90 text-background px-1.5 py-0.5 rounded-full text-[8px] font-bold">
-                  ✓
+      {profile?.is_premium ? (
+        <>
+          <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+            {display.map((p) => (
+              <div
+                key={p.id}
+                className="relative shrink-0 w-28 h-40 rounded-2xl overflow-hidden border border-border"
+              >
+                <img
+                  src={p.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300`}
+                  alt={p.full_name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-2 text-white">
+                  <p className="text-xs font-bold truncate">{p.full_name}, {p.age}</p>
+                  <TrustScoreBadge profile={p} size="xs" />
                 </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                {p.is_verified && (
+                  <div className="absolute top-1.5 right-1.5 bg-gold/90 text-background px-1.5 py-0.5 rounded-full text-[8px] font-bold">
+                    ✓
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
 
-      {!expanded && profile?.is_premium && picks.length > 3 && (
+          {!expanded && picks.length > 3 && (
+            <button
+              onClick={() => setExpanded(true)}
+              className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground transition py-1"
+            >
+              See {picks.length} more picks ↓
+            </button>
+          )}
+        </>
+      ) : (
         <button
-          onClick={() => setExpanded(true)}
-          className="w-full mt-2 text-xs text-muted-foreground hover:text-foreground transition py-1"
+          onClick={() => navigate('/premium')}
+          className="relative w-full h-40 rounded-2xl overflow-hidden border border-gold/30 bg-gradient-to-br from-gold/10 to-primary/10 flex flex-col items-center justify-center gap-2 hover:border-gold/50 transition"
         >
-          See {picks.length} more picks ↓
+          <div className="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center">
+            <Crown className="text-gold" size={24} />
+          </div>
+          <p className="text-sm font-bold text-gold">Unlock Top Picks</p>
+          <p className="text-[10px] text-muted-foreground text-center px-4">
+            Daily curated matches based on your preferences
+          </p>
         </button>
       )}
     </div>
