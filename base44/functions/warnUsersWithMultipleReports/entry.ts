@@ -3,6 +3,19 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.31';
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
+
+    // Block anonymous direct HTTP calls — allow only the internal automation
+    // system (authenticated by the platform, no user session) or admin users.
+    const isAuthed = await base44.auth.isAuthenticated().catch(() => false);
+    if (!isAuthed) {
+      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    let caller = null;
+    try { caller = await base44.auth.me(); } catch {}
+    if (caller && caller.role !== 'admin') {
+      return Response.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const svc = base44.asServiceRole;
 
     const payload = await req.json();
