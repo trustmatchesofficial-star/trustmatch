@@ -7,7 +7,8 @@ import NotificationBell from './NotificationBell';
 import MatchCelebration from './MatchCelebration';
 import { useAuth } from '@/lib/AuthContext';
 import { base44 } from '@/api/base44Client';
-import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings, ClipboardList } from 'lucide-react';
+import { Heart, Compass, MessageCircle, User, Crown, Shield, Settings, ClipboardList, Calendar } from 'lucide-react';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function Layout() {
   const location = useLocation();
@@ -15,6 +16,7 @@ export default function Layout() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [celebrationMatch, setCelebrationMatch] = useState(null);
+  useTheme();
 
   useEffect(() => {
     if (!user) { setLoading(false); return; }
@@ -66,6 +68,7 @@ export default function Layout() {
     { to: '/discover', label: 'Discover', icon: Compass },
     { to: '/matches', label: 'Matches', icon: Heart },
     { to: '/messages', label: 'Messages', icon: MessageCircle },
+    { to: '/events', label: 'Events', icon: Calendar },
     { to: '/safety-hub', label: 'Safety Hub', icon: Shield },
     { to: '/premium', label: 'Premium', icon: Crown },
     { to: '/profile', label: 'Profile', icon: User },

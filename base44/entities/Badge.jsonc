@@ -1,0 +1,55 @@
+{
+  "name": "Badge",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string",
+      "description": "lucide-react icon name"
+    },
+    "criteria_type": {
+      "type": "string",
+      "enum": [
+        "verified_event",
+        "hobby",
+        "activity",
+        "achievement",
+        "special"
+      ],
+      "default": "achievement"
+    },
+    "color": {
+      "type": "string",
+      "description": "Tailwind color token: gold, teal, primary, purple, etc.",
+      "default": "gold"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "icon"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": null,
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -3,9 +3,10 @@ import { useOutletContext, Navigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   Shield, Flag, CheckCircle, XCircle, Users, AlertTriangle, Clock, BadgeCheck,
-  IdCard, MessageSquareWarning, Ban, UserX, UserCheck, ShieldAlert, ShieldCheck, FileText,
+  IdCard, MessageSquareWarning, Ban, UserX, UserCheck, ShieldAlert, ShieldCheck, FileText, Award,
 } from 'lucide-react';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
+import BadgeDisplay from '@/components/BadgeDisplay';
 
 export default function Admin() {
   const { profile } = useOutletContext();
@@ -19,20 +20,23 @@ export default function Admin() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [notes, setNotes] = useState({});
   const [filterMode, setFilterMode] = useState('pending');
+  const [badges, setBadges] = useState([]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allReports, allProfiles, allVerifications, allAlerts] = await Promise.all([
+      const [allReports, allProfiles, allVerifications, allAlerts, allBadges] = await Promise.all([
         base44.entities.Report.list('-created_date', 100),
         base44.entities.Profile.list('-created_date', 100),
         base44.entities.VerificationRequest.list('-created_date', 100),
         base44.entities.SafetyAlert.list('-created_date', 100),
+        base44.entities.Badge.list('-created_date', 100),
       ]);
       setReports(allReports);
       setProfiles(allProfiles);
       setVerifications(allVerifications);
       setSafetyAlerts(allAlerts);
+      setBadges(allBadges);
 
       const flagged = allReports.filter((r) => r.message_id);
       const msgMap = {};
@@ -176,6 +180,7 @@ export default function Admin() {
     { key: 'alerts', label: 'Safety Alerts', count: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
     { key: 'flagged', label: 'Flagged Messages', count: flaggedReports.length, icon: MessageSquareWarning },
     { key: 'users', label: 'Users', count: null, icon: Users },
+    { key: 'badges', label: 'Badges', count: badges.length, icon: Award },
   ];
 
   const statusBadge = (status) => {
@@ -649,6 +654,148 @@ export default function Admin() {
             ))}
           </div>
         )}
+
+        {/* Badges */}
+        {tab === 'badges' && (
+          <div className="space-y-4">
+            {/* Create badge */}
+            <BadgeCreateForm onCreated={loadData} />
+
+            {/* Existing badges */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Existing Badges</h3>
+              {badges.length === 0 ? (
+                <p className="text-muted-foreground text-sm text-center py-8">No badges created yet.</p>
+              ) : (
+                badges.map((badge) => (
+                  <div key={badge.id} className="bg-card rounded-2xl border border-border p-4 flex items-center gap-3">
+                    <BadgeDisplay badgeIds={[badge.id]} size="md" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-sm">{badge.name}</h4>
+                      <p className="text-xs text-muted-foreground">{badge.description}</p>
+                    </div>
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize">{badge.criteria_type}</span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Award badge to user */}
+            <div className="bg-card rounded-2xl border border-border p-4">
+              <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                <Award size={16} className="text-gold" /> Award Badge to User
+              </h3>
+              <div className="space-y-3">
+                {profiles.map((p) => (
+                  <div key={p.id} className="flex items-center gap-3">
+                    <img
+                      src={p.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100`}
+                      alt={p.full_name}
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                    <span className="flex-1 text-sm truncate">{p.full_name}</span>
+                    {p.badges?.length > 0 && <BadgeDisplay badgeIds={p.badges} size="sm" />}
+                    <select
+                      onChange={async (e) => {
+                        if (!e.target.value) return;
+                        const badgeId = e.target.value;
+                        const currentBadges = p.badges || [];
+                        if (!currentBadges.includes(badgeId)) {
+                          await base44.entities.Profile.update(p.id, { badges: [...currentBadges, badgeId] });
+                          loadData();
+                        }
+                      }}
+                      defaultValue=""
+                      className="px-3 py-1.5 rounded-lg border border-input bg-background text-sm outline-none"
+                    >
+                      <option value="">+ Award</option>
+                      {badges.map((b) => (
+                        <option key={b.id} value={b.id}>{b.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BadgeCreateForm({ onCreated }) {
+  const [form, setForm] = useState({ name: '', description: '', icon: 'Award', color: 'gold', criteria_type: 'achievement' });
+  const [saving, setSaving] = useState(false);
+
+  const ICON_OPTIONS = ['Award', 'Crown', 'Star', 'Heart', 'Shield', 'Zap', 'Trophy', 'Medal', 'Flame', 'Gem', 'Sparkles', 'Gift'];
+  const COLOR_OPTIONS = ['gold', 'teal', 'primary', 'purple', 'destructive'];
+
+  const handleSubmit = async () => {
+    if (!form.name || !form.description) return;
+    setSaving(true);
+    try {
+      await base44.entities.Badge.create(form);
+      setForm({ name: '', description: '', icon: 'Award', color: 'gold', criteria_type: 'achievement' });
+      onCreated();
+    } catch (err) { console.error(err); }
+    setSaving(false);
+  };
+
+  return (
+    <div className="bg-card rounded-2xl border border-border p-4">
+      <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
+        <Award size={16} className="text-gold" /> Create New Badge
+      </h3>
+      <div className="space-y-3">
+        <input
+          type="text"
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          placeholder="Badge name"
+          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background outline-none text-sm focus:ring-2 focus:ring-primary/30"
+        />
+        <input
+          type="text"
+          value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          placeholder="Description"
+          className="w-full px-4 py-2.5 rounded-xl border border-input bg-background outline-none text-sm focus:ring-2 focus:ring-primary/30"
+        />
+        <div className="flex gap-3">
+          <select
+            value={form.icon}
+            onChange={(e) => setForm({ ...form, icon: e.target.value })}
+            className="flex-1 px-3 py-2.5 rounded-xl border border-input bg-background text-sm outline-none"
+          >
+            {ICON_OPTIONS.map((ic) => <option key={ic} value={ic}>{ic}</option>)}
+          </select>
+          <select
+            value={form.color}
+            onChange={(e) => setForm({ ...form, color: e.target.value })}
+            className="px-3 py-2.5 rounded-xl border border-input bg-background text-sm outline-none"
+          >
+            {COLOR_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select
+            value={form.criteria_type}
+            onChange={(e) => setForm({ ...form, criteria_type: e.target.value })}
+            className="px-3 py-2.5 rounded-xl border border-input bg-background text-sm outline-none capitalize"
+          >
+            <option value="achievement">Achievement</option>
+            <option value="verified_event">Verified Event</option>
+            <option value="hobby">Hobby</option>
+            <option value="activity">Activity</option>
+            <option value="special">Special</option>
+          </select>
+        </div>
+        <button
+          onClick={handleSubmit}
+          disabled={saving}
+          className="w-full py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition disabled:opacity-50"
+        >
+          {saving ? 'Creating...' : 'Create Badge'}
+        </button>
       </div>
     </div>
   );

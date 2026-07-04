@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { Compass, Heart, MessageCircle, Shield, User, Settings } from 'lucide-react';
+import { Compass, Heart, MessageCircle, Shield, User, Settings, Calendar } from 'lucide-react';
 
 const navItems = [
   { to: '/discover', label: 'Discover', icon: Compass },
   { to: '/matches', label: 'Matches', icon: Heart },
   { to: '/messages', label: 'Messages', icon: MessageCircle },
-  { to: '/safety-hub', label: 'Safety', icon: Shield },
+  { to: '/events', label: 'Events', icon: Calendar },
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/settings', label: 'Settings', icon: Settings },
 ];

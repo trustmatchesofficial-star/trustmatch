@@ -11,6 +11,7 @@ import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell, P
 import { Link } from 'react-router-dom';
 import TopPicks from '@/components/TopPicks';
 import PassportModal from '@/components/PassportModal';
+import { sortByCompatibility } from '@/utils/matchmaking';
 
 export default function Discover() {
   const { profile, setProfile } = useOutletContext();
@@ -51,24 +52,8 @@ export default function Discover() {
           p.is_active &&
           p.is_onboarded
       );
-      const now = new Date();
-      const passport = profile.passport_location;
-      filtered.sort((a, b) => {
-        const aBoosted = a.boosted_until && new Date(a.boosted_until) > now;
-        const bBoosted = b.boosted_until && new Date(b.boosted_until) > now;
-        if (aBoosted && !bBoosted) return -1;
-        if (!aBoosted && bBoosted) return 1;
-        if (passport) {
-          const aMatch = a.location === passport;
-          const bMatch = b.location === passport;
-          if (aMatch && !bMatch) return -1;
-          if (!aMatch && bMatch) return 1;
-        }
-        if (a.is_verified && !b.is_verified) return -1;
-        if (!a.is_verified && b.is_verified) return 1;
-        return new Date(b.created_date) - new Date(a.created_date);
-      });
-      setProfiles(filtered);
+      // Smart matchmaking: sort by compatibility score (shared interests, distance, preferences)
+      setProfiles(sortByCompatibility(filtered, profile));
     } catch (err) {
       console.error(err);
     }

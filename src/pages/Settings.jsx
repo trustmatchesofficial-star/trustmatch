@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext, Link } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail, Video, LogOut } from 'lucide-react';
+import { Shield, Eye, Download, Trash2, BadgeCheck, ChevronRight, Lock, User, Mail, Video, LogOut, Sun, Moon, AlertTriangle } from 'lucide-react';
 import VerificationModal from '@/components/VerificationModal';
 import LiveVideoVerification from '@/components/LiveVideoVerification';
 import DailyDigestButton from '@/components/DailyDigestButton';
+import { useTheme } from '@/hooks/useTheme';
 
 export default function Settings() {
   const { profile, setProfile } = useOutletContext();
@@ -15,6 +16,10 @@ export default function Settings() {
   const [showLive, setShowLive] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportSent, setExportSent] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!profile) return;
@@ -66,6 +71,26 @@ export default function Settings() {
     <div className="min-h-screen px-6 pt-6 pb-24">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-heading font-bold mb-6">Settings</h1>
+
+        {/* Appearance */}
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            {theme === 'dark' ? <Moon size={16} className="text-muted-foreground" /> : <Sun size={16} className="text-muted-foreground" />}
+            <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Appearance</h2>
+          </div>
+          <div className="bg-card rounded-2xl border border-border p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {theme === 'dark' ? <Moon size={16} className="text-primary" /> : <Sun size={16} className="text-primary" />}
+              <span className="text-sm font-medium capitalize">{theme} mode</span>
+            </div>
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full border border-border text-sm font-medium hover:bg-secondary transition"
+            >
+              Switch to {theme === 'dark' ? 'Light' : 'Dark'}
+            </button>
+          </div>
+        </div>
 
         {/* Privacy */}
         <div className="mb-6">
@@ -262,10 +287,13 @@ export default function Settings() {
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
             </button>
-            <button className="w-full flex items-center justify-between p-4 hover:bg-secondary/50 transition">
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full flex items-center justify-between p-4 hover:bg-destructive/5 transition"
+            >
               <div className="flex items-center gap-2">
                 <Trash2 size={16} className="text-destructive" />
-                <span className="text-sm text-destructive">Request account deletion</span>
+                <span className="text-sm text-destructive">Delete my account & data</span>
               </div>
               <ChevronRight size={16} className="text-destructive" />
             </button>
@@ -302,6 +330,64 @@ export default function Settings() {
           setProfile={setProfile}
           onClose={() => setShowLive(false)}
         />
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in" onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div className="bg-card rounded-3xl border border-destructive/30 max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="text-destructive" size={28} />
+            </div>
+            <h2 className="text-xl font-heading font-bold text-center mb-2">Delete Account & Data</h2>
+            <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
+              This will <strong className="text-destructive">permanently delete</strong> your profile, photos, messages, likes, and other personal data. This action cannot be undone.
+            </p>
+            <div className="bg-secondary/50 rounded-xl p-3 mb-5">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                • Your profile, photos, and bio will be deleted<br/>
+                • Messages you sent will be deleted<br/>
+                • Your likes, blocks, and notifications will be deleted<br/>
+                • Matches will be marked as unmatched (preserving the other person's history)<br/>
+                • Messages you received will be anonymized
+              </p>
+            </div>
+            <p className="text-sm text-muted-foreground mb-2">Type <strong className="text-foreground">DELETE</strong> to confirm:</p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={(e) => setDeleteConfirmText(e.target.value)}
+              disabled={deleting}
+              placeholder="DELETE"
+              className="w-full px-4 py-3 rounded-xl border border-input bg-background outline-none text-sm focus:ring-2 focus:ring-destructive/30 mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); }}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-full border border-border text-sm font-semibold hover:bg-secondary transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (deleteConfirmText !== 'DELETE') return;
+                  setDeleting(true);
+                  try {
+                    await base44.functions.invoke('deleteMyData', {});
+                    await base44.auth.logout('/');
+                  } catch (err) {
+                    console.error(err);
+                    setDeleting(false);
+                  }
+                }}
+                disabled={deleting || deleteConfirmText !== 'DELETE'}
+                className="flex-1 py-3 rounded-full bg-destructive text-destructive-foreground text-sm font-bold hover:bg-destructive/90 transition disabled:opacity-50"
+              >
+                {deleting ? 'Deleting...' : 'Delete Everything'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

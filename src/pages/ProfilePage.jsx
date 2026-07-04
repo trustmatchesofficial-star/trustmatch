@@ -6,6 +6,7 @@ import VerificationModal from '@/components/VerificationModal';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import FoundingMemberBadge from '@/components/FoundingMemberBadge';
+import BadgeDisplay from '@/components/BadgeDisplay';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 
@@ -119,6 +120,11 @@ export default function ProfilePage() {
             <span className="inline-flex items-center gap-1 mt-2 bg-purplecustom/15 text-purplecustom px-3 py-1 rounded-full text-xs font-medium">
               <Video size={12} /> Live verified
             </span>
+          )}
+          {profile.badges?.length > 0 && (
+            <div className="mt-3">
+              <BadgeDisplay badgeIds={profile.badges} size="md" />
+            </div>
           )}
         </div>
 

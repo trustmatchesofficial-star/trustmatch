@@ -1,0 +1,65 @@
+{
+  "name": "EventAttendee",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Profile.created_by_id of the attendee"
+    },
+    "rsvp_status": {
+      "type": "string",
+      "enum": [
+        "going",
+        "maybe",
+        "not_going"
+      ],
+      "default": "going"
+    },
+    "checked_in": {
+      "type": "boolean",
+      "default": false
+    },
+    "checked_in_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "event_id",
+    "user_id",
+    "rsvp_status"
+  ],
+  "rls": {
+    "create": {
+      "created_by_id": "{{user.id}}"
+    },
+    "read": null,
+    "update": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "created_by_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

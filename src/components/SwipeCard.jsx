@@ -3,6 +3,7 @@ import TrustScoreBadge from './TrustScoreBadge';
 import VerifiedBadge from './VerifiedBadge';
 import SafetyCheckBanner from './SafetyCheckBanner';
 import FoundingMemberBadge from './FoundingMemberBadge';
+import BadgeDisplay from './BadgeDisplay';
 
 export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
   if (!profile) return null;
@@ -85,6 +86,12 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
               </span>
             )}
           </div>
+
+          {profile.badges?.length > 0 && (
+            <div className="mb-2">
+              <BadgeDisplay badgeIds={profile.badges} size="sm" />
+            </div>
+          )}
 
           {profile.bio && (
             <p className="text-sm text-white/80 mb-3 line-clamp-2">{profile.bio}</p>

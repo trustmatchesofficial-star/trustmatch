@@ -123,6 +123,13 @@
       "type": "string",
       "format": "date-time",
       "description": "When the free premium access from the founding member promo expires. Null for non-founding members."
+    },
+    "badges": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of Badge IDs awarded to this profile."
     }
   },
   "required": [
