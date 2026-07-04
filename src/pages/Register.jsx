@@ -4,7 +4,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, Mail, Lock, Loader2, IdCard, ShieldCheck } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
@@ -45,7 +45,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = "/";
+      window.location.href = "/onboarding";
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {
@@ -138,6 +138,14 @@ export default function Register() {
         </>
       }
     >
+      <div className="mb-6 p-3 rounded-xl bg-teal/5 border border-teal/20 flex items-start gap-2.5">
+        <ShieldCheck className="text-teal shrink-0 mt-0.5" size={18} />
+        <p className="text-xs text-foreground leading-relaxed">
+          <span className="font-semibold">Identity verification required.</span> After signing up, you'll need to upload a{" "}
+          <span className="font-medium">passport or government ID</span> and a selfie. Your account stays locked until our team reviews them — no exceptions.
+        </p>
+      </div>
+
       <Button
         variant="outline"
         className="w-full h-12 text-sm font-medium mb-6"
