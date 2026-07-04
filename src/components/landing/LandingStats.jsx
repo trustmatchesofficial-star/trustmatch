@@ -1,10 +1,10 @@
-import { Users, Heart, ShieldCheck, Star } from 'lucide-react';
+import { BadgeCheck, ShieldCheck, Camera, Eye } from 'lucide-react';
 
 const stats = [
-  { icon: Users, value: '12,000+', label: 'Verified members' },
-  { icon: Heart, value: '8,500+', label: 'Matches made' },
-  { icon: ShieldCheck, value: '100%', label: 'ID-verified profiles' },
-  { icon: Star, value: '4.8', label: 'Average app rating' },
+  { icon: BadgeCheck, value: 'ID-Checked', label: 'Every profile goes through identity verification' },
+  { icon: Camera, value: 'Selfie + Liveness', label: 'Live checks confirm real people, not stolen photos' },
+  { icon: ShieldCheck, value: 'Safety First', label: 'Date tracking, SOS, and community alerts built in' },
+  { icon: Eye, value: 'Scam Aware', label: 'Tools to help you spot catfish and red flags' },
 ];
 
 export default function LandingStats() {
@@ -17,8 +17,8 @@ export default function LandingStats() {
               <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-3">
                 <Icon size={22} className="text-primary" />
               </div>
-              <p className="text-2xl md:text-3xl font-heading font-extrabold text-foreground mb-1">{value}</p>
-              <p className="text-xs md:text-sm text-muted-foreground">{label}</p>
+              <p className="text-lg md:text-xl font-heading font-bold text-foreground mb-1">{value}</p>
+              <p className="text-xs md:text-sm text-muted-foreground leading-snug">{label}</p>
             </div>
           ))}
         </div>

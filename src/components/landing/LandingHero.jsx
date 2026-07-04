@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, Heart, Lock, Eye, MapPin } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Heart, Lock, Eye, MapPin, BadgeCheck, Star } from 'lucide-react';
+import LandingPhoneMockups from '@/components/landing/LandingPhoneMockups';
 
-const features = [
-  { icon: ShieldCheck, title: 'Verified, Not Guessing', desc: 'Real ID checks, so who you match with is who you meet.' },
-  { icon: Eye, title: 'Quietly Watching Your Back', desc: 'Our Safety Center and moderated alerts flag risk without turning into a public pile-on.' },
-  { icon: MapPin, title: 'Date Safety Tracker', desc: 'Share your plans with someone you trust, one tap.' },
-  { icon: Lock, title: 'Private & Secure Messaging', desc: 'Your conversations stay yours.' },
+const trustBadges = [
+  { icon: BadgeCheck, label: 'ID-Verified Profiles' },
+  { icon: Eye, label: 'Catfish & Scam Protection' },
+  { icon: MapPin, label: 'Date Safety Tracker' },
+  { icon: Lock, label: 'Private Messaging' },
 ];
 
 export default function LandingHero() {
@@ -28,16 +29,17 @@ export default function LandingHero() {
             <span className="font-heading font-extrabold text-2xl md:text-3xl text-foreground tracking-tight">Trust Matches</span>
           </div>
 
+          {/* Who it's for */}
+          <div className="inline-flex items-center gap-1.5 bg-primary/10 border border-primary/30 text-primary px-4 py-1.5 rounded-full text-xs font-semibold mb-5">
+            <Heart size={12} /> Built for Safer Online Dating
+          </div>
+
           <h1 className="font-heading font-extrabold text-4xl md:text-6xl text-foreground tracking-tight mb-5">
             Meet People You Can Actually Trust
           </h1>
 
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            Every profile verified. Every date, a little safer. TrustMatch is dating that feels good and has your back.
-          </p>
-
-          <p className="text-sm md:text-base text-foreground/70 leading-relaxed max-w-xl mx-auto mt-3 italic">
-            Know who you're really talking to before you meet, pay, or trust.
+            A dating app where every profile is identity-verified — so you know who you're really talking to before you meet, pay, or trust.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
@@ -54,33 +56,51 @@ export default function LandingHero() {
               See How Safety Works
             </Link>
           </div>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 mt-8">
+            {trustBadges.map(({ icon: Icon, label }) => (
+              <span key={label} className="inline-flex items-center gap-1.5 bg-card/60 backdrop-blur-sm border border-border text-foreground/80 px-3 py-1.5 rounded-full text-xs font-medium">
+                <Icon size={13} className="text-teal" /> {label}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {/* Middle: Image with neon heart glow */}
+        {/* Middle: App screenshots (phone mockups) */}
         <div className="relative max-w-4xl mx-auto mb-12 md:mb-16">
-          <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-border">
-            <img
-              src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=1000&h=700&fit=crop"
-              alt="A couple smiling at each other"
-              className="w-full h-[360px] md:h-[560px] object-cover"
-            />
-            {/* Neon heart glow overlay */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(circle at 50% 40%, rgba(214,51,108,0.25) 0%, transparent 50%)' }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
-          </div>
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            {/* Phone mockups - desktop */}
+            <div className="hidden md:block">
+              <LandingPhoneMockups />
+            </div>
 
-          {/* Glassmorphism floating card */}
-          <div className="absolute bottom-6 right-4 md:right-8 bg-card/70 backdrop-blur-xl border border-border rounded-2xl p-5 shadow-xl max-w-[240px]">
-            <div className="flex items-center gap-2.5 mb-1.5">
-              <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <Heart size={22} className="text-primary fill-primary" />
+            {/* Hero image - visible on mobile, supplementary on desktop */}
+            <div className="relative">
+              <div className="relative rounded-[2rem] overflow-hidden shadow-2xl border border-border">
+                <img
+                  src="https://images.unsplash.com/photo-1529636798458-92182e662485?w=1000&h=700&fit=crop"
+                  alt="A couple smiling at each other"
+                  className="w-full h-[360px] md:h-[460px] object-cover"
+                />
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ background: 'radial-gradient(circle at 50% 40%, rgba(214,51,108,0.25) 0%, transparent 50%)' }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/40 via-transparent to-transparent" />
               </div>
-              <div>
-                <p className="font-bold text-sm text-foreground tracking-wide">REAL CONNECTIONS</p>
-                <p className="text-xs text-muted-foreground">Genuine moments, backed by trust.</p>
+
+              {/* Glassmorphism floating card */}
+              <div className="absolute bottom-6 right-4 md:right-8 bg-card/70 backdrop-blur-xl border border-border rounded-2xl p-5 shadow-xl max-w-[240px]">
+                <div className="flex items-center gap-2.5 mb-1.5">
+                  <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
+                    <Heart size={22} className="text-primary fill-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-sm text-foreground tracking-wide">REAL CONNECTIONS</p>
+                    <p className="text-xs text-muted-foreground">Genuine moments, backed by trust.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -121,3 +141,10 @@ export default function LandingHero() {
     </section>
   );
 }
+
+const features = [
+  { icon: ShieldCheck, title: 'Verified, Not Guessing', desc: 'Real ID checks, so who you match with is who you meet.' },
+  { icon: Eye, title: 'Quietly Watching Your Back', desc: 'Our Safety Center and moderated alerts flag risk without turning into a public pile-on.' },
+  { icon: MapPin, title: 'Date Safety Tracker', desc: 'Share your plans with someone you trust, one tap.' },
+  { icon: Lock, title: 'Private & Secure Messaging', desc: 'Your conversations stay yours.' },
+];

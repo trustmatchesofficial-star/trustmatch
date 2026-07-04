@@ -43,8 +43,8 @@ export default function Landing() {
         className="w-full h-auto"
       />
       <LandingHero />
-      <LandingFoundingMember />
       <LandingStats />
+      <LandingFoundingMember />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />
       <LandingSafetyGrid />
