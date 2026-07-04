@@ -59,10 +59,11 @@ export default function Layout() {
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
     </div>
   );
+  const isAdmin = user?.role === 'admin';
   if (!profile || !profile.is_onboarded) return <Navigate to="/onboarding" replace />;
+  if (!profile.is_verified && !isAdmin) return <Navigate to="/pending-verification" replace />;
 
   const hideNav = location.pathname.startsWith('/chat');
-  const isAdmin = user?.role === 'admin';
 
   const navLinks = [
     { to: '/discover', label: 'Discover', icon: Compass },

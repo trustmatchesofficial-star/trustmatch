@@ -14,6 +14,7 @@ import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import Onboarding from '@/pages/Onboarding';
+import PendingVerification from '@/pages/PendingVerification';
 import Discover from '@/pages/Discover';
 import Browse from '@/pages/Browse';
 import Matches from '@/pages/Matches';
@@ -61,6 +62,7 @@ const AuthenticatedApp = () => {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route element={<ProtectedRoute unauthenticatedElement={<Landing />} />}>
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/pending-verification" element={<PendingVerification />} />
         <Route element={<Layout />}>
           <Route path="/discover" element={<Discover />} />
           <Route path="/browse" element={<Browse />} />

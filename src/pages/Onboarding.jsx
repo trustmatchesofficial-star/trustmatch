@@ -106,7 +106,7 @@ export default function Onboarding() {
         id_document_url: idDocumentUrl,
         status: 'pending',
       });
-      navigate('/discover');
+      navigate('/pending-verification');
     } catch (err) {
       console.error('Profile creation failed', err);
       setSaving(false);

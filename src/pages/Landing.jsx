@@ -26,7 +26,7 @@ export default function Landing() {
     if (user) {
       base44.entities.Profile.filter({ created_by_id: user.id })
         .then((profiles) => {
-          if (profiles[0]?.is_onboarded) setRedirect(true);
+          if (profiles[0]?.is_onboarded && profiles[0]?.is_verified) setRedirect(true);
         })
         .catch(() => {});
     }
