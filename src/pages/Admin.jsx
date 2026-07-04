@@ -3,7 +3,7 @@ import { useOutletContext, Navigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import {
   Shield, Flag, CheckCircle, XCircle, Users, AlertTriangle, Clock, BadgeCheck,
-  IdCard, MessageSquareWarning, Ban, UserX, UserCheck, ShieldAlert, ShieldCheck, FileText, Award,
+  IdCard, MessageSquareWarning, Ban, UserX, UserCheck, ShieldAlert, ShieldCheck, FileText, Award, Radar,
 } from 'lucide-react';
 import TrustScoreBadge from '@/components/TrustScoreBadge';
 import BadgeDisplay from '@/components/BadgeDisplay';
@@ -15,6 +15,7 @@ export default function Admin() {
   const [verifications, setVerifications] = useState([]);
   const [messages, setMessages] = useState({});
   const [safetyAlerts, setSafetyAlerts] = useState([]);
+  const [safetyPatternFlags, setSafetyPatternFlags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('reports');
   const [selectedImage, setSelectedImage] = useState(null);
@@ -25,18 +26,20 @@ export default function Admin() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [allReports, allProfiles, allVerifications, allAlerts, allBadges] = await Promise.all([
+      const [allReports, allProfiles, allVerifications, allAlerts, allBadges, allFlags] = await Promise.all([
         base44.entities.Report.list('-created_date', 100),
         base44.entities.Profile.list('-created_date', 100),
         base44.entities.VerificationRequest.list('-created_date', 100),
         base44.entities.SafetyAlert.list('-created_date', 100),
         base44.entities.Badge.list('-created_date', 100),
+        base44.entities.SafetyPatternFlag.list('-flagged_at', 100),
       ]);
       setReports(allReports);
       setProfiles(allProfiles);
       setVerifications(allVerifications);
       setSafetyAlerts(allAlerts);
       setBadges(allBadges);
+      setSafetyPatternFlags(allFlags);
 
       const flagged = allReports.filter((r) => r.message_id);
       const msgMap = {};
@@ -112,6 +115,53 @@ export default function Admin() {
     } catch (err) { console.error(err); }
   };
 
+  const handlePatternFlagAction = async (flag, action) => {
+    try {
+      const note = notes[flag.id] || undefined;
+      if (action === 'dismiss') {
+        await base44.entities.SafetyPatternFlag.update(flag.id, {
+          status: 'dismissed',
+          review_note: note,
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+        });
+      } else if (action === 'reviewed') {
+        await base44.entities.SafetyPatternFlag.update(flag.id, {
+          status: 'reviewed',
+          review_note: note,
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+        });
+      } else if (action === 'suspend') {
+        await base44.entities.SafetyPatternFlag.update(flag.id, {
+          status: 'reviewed',
+          review_note: (note || '') + ' [Action: suspended]',
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+        });
+        await base44.entities.Profile.update(flag.subject_profile_id, {
+          account_status: 'suspended',
+          is_active: false,
+          trust_score: 20,
+        });
+      } else if (action === 'ban') {
+        await base44.entities.SafetyPatternFlag.update(flag.id, {
+          status: 'reviewed',
+          review_note: (note || '') + ' [Action: banned]',
+          reviewed_by_id: profile?.created_by_id,
+          reviewed_at: new Date().toISOString(),
+        });
+        await base44.entities.Profile.update(flag.subject_profile_id, {
+          account_status: 'banned',
+          is_active: false,
+          trust_score: 5,
+        });
+      }
+      setNotes((n) => { const next = { ...n }; delete next[flag.id]; return next; });
+      loadData();
+    } catch (err) { console.error(err); }
+  };
+
   const handleAlertAction = async (alert, action) => {
     try {
       if (action === 'approve') {
@@ -170,6 +220,7 @@ export default function Admin() {
   const pendingVerifications = verifications.filter((v) => v.status === 'pending');
   const fraudFlaggedVerifications = verifications.filter((v) => v.status === 'flagged_fraud');
   const pendingAlerts = safetyAlerts.filter((a) => a.status === 'pending_review');
+  const pendingPatternFlags = safetyPatternFlags.filter((f) => f.status === 'pending_review');
   const disputedAlerts = safetyAlerts.filter((a) => a.dispute_status === 'disputed');
   const flaggedReports = reports.filter((r) => r.message_id || r.reason === 'scam' || r.reason === 'safety_concern');
   const suspendedCount = profiles.filter((p) => p.account_status === 'suspended' || p.account_status === 'banned').length;
@@ -178,6 +229,7 @@ export default function Admin() {
     { key: 'reports', label: 'Reports', count: pendingReports.length, icon: Flag },
     { key: 'verifications', label: 'Verifications', count: pendingVerifications.length + fraudFlaggedVerifications.length, icon: BadgeCheck },
     { key: 'alerts', label: 'Safety Alerts', count: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
+    { key: 'radar', label: 'Safety Radar', count: pendingPatternFlags.length, icon: Radar },
     { key: 'flagged', label: 'Flagged Messages', count: flaggedReports.length, icon: MessageSquareWarning },
     { key: 'users', label: 'Users', count: null, icon: Users },
     { key: 'badges', label: 'Badges', count: badges.length, icon: Award },
@@ -313,6 +365,7 @@ export default function Admin() {
             { label: 'Open Reports', value: pendingReports.length, icon: Flag },
             { label: 'Verifications', value: pendingVerifications.length + fraudFlaggedVerifications.length, icon: BadgeCheck },
             { label: 'Safety Alerts', value: pendingAlerts.length + disputedAlerts.length, icon: ShieldAlert },
+            { label: 'Safety Radar', value: pendingPatternFlags.length, icon: Radar },
             { label: 'Flagged Msgs', value: flaggedReports.length, icon: MessageSquareWarning },
           ].map(({ label, value, icon: Icon }) => (
             <div key={label} className="bg-card rounded-2xl border border-border p-4">
@@ -599,6 +652,112 @@ export default function Admin() {
                 );
               });
             })()}
+          </div>
+        )}
+
+        {/* Safety Radar — Collective pattern flags */}
+        {tab === 'radar' && (
+          <div className="space-y-3">
+            <div className="bg-secondary/50 rounded-xl p-3 mb-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                <Radar size={14} className="inline text-primary mr-1" />
+                These flags are generated automatically when <strong>3+ independent reviewers</strong> leave
+                concerning date feedback about the same person. No single review can trigger a flag.
+                A modest trust score deduction (max -10) was applied once when the flag was created.
+                Review and decide — no automatic bans.
+              </p>
+            </div>
+            {safetyPatternFlags.length === 0 ? (
+              <div className="text-center py-16">
+                <Radar className="text-muted-foreground mx-auto mb-3" size={36} />
+                <p className="text-muted-foreground">No collective safety patterns detected.</p>
+              </div>
+            ) : (
+              safetyPatternFlags.map((flag) => {
+                const subjectProfile = profiles.find((p) => p.id === flag.subject_profile_id);
+                return (
+                  <div key={flag.id} className={`bg-card rounded-2xl border p-4 ${flag.status === 'pending_review' ? 'border-gold/40 bg-gold/5' : 'border-border'}`}>
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                        <Radar className="text-primary" size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h3 className="font-semibold truncate flex items-center gap-2">
+                            {flag.subject_full_name || subjectProfile?.full_name || 'Unknown'}
+                            {subjectProfile && <TrustScoreBadge profile={subjectProfile} size="sm" />}
+                          </h3>
+                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ${statusBadge(flag.status === 'pending_review' ? 'pending' : flag.status === 'reviewed' ? 'resolved' : 'dismissed')}`}>
+                            {flag.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-2 text-xs">
+                          <div className="bg-secondary/50 rounded-lg p-2">
+                            <p className="text-muted-foreground">Distinct reviewers</p>
+                            <p className="font-bold text-sm">{flag.distinct_reviewer_count}</p>
+                          </div>
+                          <div className="bg-secondary/50 rounded-lg p-2">
+                            <p className="text-muted-foreground">Total feedback</p>
+                            <p className="font-bold text-sm">{flag.total_feedback_count}</p>
+                          </div>
+                          <div className="bg-secondary/50 rounded-lg p-2">
+                            <p className="text-muted-foreground">Avg safety rating</p>
+                            <p className={`font-bold text-sm ${flag.avg_safety_rating <= 2 ? 'text-destructive' : 'text-foreground'}`}>
+                              {flag.avg_safety_rating?.toFixed(1) || '—'}/5
+                            </p>
+                          </div>
+                          <div className="bg-secondary/50 rounded-lg p-2">
+                            <p className="text-muted-foreground">Avg comfort rating</p>
+                            <p className={`font-bold text-sm ${flag.avg_comfort_rating <= 2 ? 'text-destructive' : 'text-foreground'}`}>
+                              {flag.avg_comfort_rating?.toFixed(1) || '—'}/5
+                            </p>
+                          </div>
+                          <div className="bg-secondary/50 rounded-lg p-2">
+                            <p className="text-muted-foreground">Wouldn't meet again</p>
+                            <p className="font-bold text-sm text-destructive">{flag.would_meet_again_false_count}</p>
+                          </div>
+                          <div className="bg-secondary/50 rounded-lg p-2">
+                            <p className="text-muted-foreground">Low safety/comfort</p>
+                            <p className="font-bold text-sm text-destructive">{flag.low_safety_count}/{flag.low_comfort_count}</p>
+                          </div>
+                        </div>
+                        {flag.trust_score_adjusted && (
+                          <p className="text-[10px] text-gold mt-2">⚠ Trust score adjusted by -10 when flag was created.</p>
+                        )}
+                        {flag.review_note && (
+                          <p className="text-xs text-muted-foreground mt-2 italic">Admin note: {flag.review_note}</p>
+                        )}
+                        {flag.status === 'pending_review' && (
+                          <>
+                            <input
+                              type="text"
+                              value={notes[flag.id] || ''}
+                              onChange={(e) => setNotes((n) => ({ ...n, [flag.id]: e.target.value }))}
+                              placeholder="Review note (optional)"
+                              className="w-full mt-3 mb-2 px-3 py-2 rounded-lg border border-input bg-background text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                            />
+                            <div className="flex flex-wrap gap-2">
+                              <button onClick={() => handlePatternFlagAction(flag, 'ban')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:bg-destructive/90 transition">
+                                <Ban size={14} /> Ban
+                              </button>
+                              <button onClick={() => handlePatternFlagAction(flag, 'suspend')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-semibold hover:bg-gold/25 transition">
+                                <UserX size={14} /> Suspend
+                              </button>
+                              <button onClick={() => handlePatternFlagAction(flag, 'reviewed')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal/15 text-teal text-sm font-medium hover:bg-teal/25 transition">
+                                <CheckCircle size={14} /> Reviewed — No Action
+                              </button>
+                              <button onClick={() => handlePatternFlagAction(flag, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:bg-muted transition">
+                                <XCircle size={14} /> Dismiss
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         )}
 

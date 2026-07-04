@@ -29,6 +29,7 @@ import Settings from '@/pages/Settings';
 import SafetyCenter from '@/pages/SafetyCenter';
 import DateSafety from '@/pages/DateSafety';
 import Events from '@/pages/Events';
+import ScamAwareness from '@/pages/ScamAwareness';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
@@ -73,6 +74,7 @@ const AuthenticatedApp = () => {
           <Route path="/safety-center" element={<SafetyCenter />} />
           <Route path="/date-safety/:matchId" element={<DateSafety />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/scam-awareness" element={<ScamAwareness />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/onboarding-dashboard" element={<OnboardingDashboard />} />
         </Route>

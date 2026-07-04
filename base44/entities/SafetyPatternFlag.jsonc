@@ -1,0 +1,99 @@
+{
+  "name": "SafetyPatternFlag",
+  "type": "object",
+  "properties": {
+    "subject_profile_id": {
+      "type": "string",
+      "description": "Profile ID of the person whose date feedback triggered the pattern."
+    },
+    "subject_user_id": {
+      "type": "string",
+      "description": "created_by_id of the subject profile."
+    },
+    "subject_full_name": {
+      "type": "string",
+      "description": "Full name of the subject for admin display."
+    },
+    "distinct_reviewer_count": {
+      "type": "number",
+      "description": "Number of distinct reviewers who left feedback."
+    },
+    "total_feedback_count": {
+      "type": "number"
+    },
+    "avg_safety_rating": {
+      "type": "number"
+    },
+    "avg_comfort_rating": {
+      "type": "number"
+    },
+    "would_meet_again_false_count": {
+      "type": "number",
+      "description": "Number of distinct reviewers who said they would not meet again."
+    },
+    "low_safety_count": {
+      "type": "number",
+      "description": "Distinct reviewers who gave safety_rating <= 2."
+    },
+    "low_comfort_count": {
+      "type": "number",
+      "description": "Distinct reviewers who gave comfort_rating <= 2."
+    },
+    "flagged_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending_review",
+        "reviewed",
+        "dismissed"
+      ],
+      "default": "pending_review"
+    },
+    "review_note": {
+      "type": "string"
+    },
+    "reviewed_by_id": {
+      "type": "string"
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "trust_score_adjusted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the trust_score was already lowered for this flag."
+    }
+  },
+  "required": [
+    "subject_profile_id",
+    "subject_user_id",
+    "distinct_reviewer_count",
+    "status"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}
