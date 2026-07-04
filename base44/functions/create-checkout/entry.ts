@@ -18,7 +18,12 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'You already have an active or pending subscription.' }, { status: 400 });
     }
 
-    const origin = req.headers.get('Origin') || req.headers.get('origin') || 'https://trustmatches.com';
+    const ALLOWED_ORIGINS = [
+      'https://trustmatches.com',
+      'https://www.trustmatches.com',
+    ];
+    const rawOrigin = req.headers.get('Origin') || req.headers.get('origin') || '';
+    const origin = ALLOWED_ORIGINS.includes(rawOrigin) ? rawOrigin : 'https://trustmatches.com';
 
     const WIX_API_KEY = Deno.env.get('WIX_PAYMENTS_API_KEY');
     const WIX_SITE_ID = Deno.env.get('WIX_PAYMENTS_SITE_ID');

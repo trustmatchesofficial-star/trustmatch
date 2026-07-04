@@ -4,9 +4,10 @@ Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
 
-    // Block anonymous direct HTTP calls — allow only the internal automation
-    // system (authenticated by the platform, no user session) or admin users.
-    const isAuthed = await base44.auth.isAuthenticated().catch(() => false);
+    // Only the internal automation system (platform-authenticated, no user
+    // session) or an authenticated admin may invoke this endpoint. Anonymous
+    // and regular-user callers are rejected.
+    const isAuthed = await base44.auth.isAuthenticated();
     if (!isAuthed) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
