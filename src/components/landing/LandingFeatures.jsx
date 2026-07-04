@@ -1,10 +1,10 @@
-import { ShieldCheck, Lock, Users, Star } from 'lucide-react';
+import { ShieldCheck, Lock, Eye, MapPin } from 'lucide-react';
 
 const features = [
-  { icon: ShieldCheck, title: 'Verified Identities', desc: 'Secure verification for genuine profiles.' },
-  { icon: Lock, title: 'Privacy First', desc: 'Your data. Your control. Always.' },
-  { icon: Users, title: 'Date Safety Mode', desc: 'Pre-meet safety tools & trusted contacts.' },
-  { icon: Star, title: 'Shared Experiences', desc: 'Events, hobbies & interests to help you connect.' },
+  { icon: ShieldCheck, title: 'Verified, Not Guessing', desc: 'Real ID checks, so who you match with is who you meet.' },
+  { icon: Eye, title: 'Quietly Watching Your Back', desc: 'Our Safety Center and moderated alerts flag risk without turning into a public pile-on.' },
+  { icon: MapPin, title: 'Date Safety Tracker', desc: 'Share your plans with someone you trust, one tap.' },
+  { icon: Lock, title: 'Private & Secure Messaging', desc: 'Your conversations stay yours.' },
 ];
 
 export default function LandingFeatures() {

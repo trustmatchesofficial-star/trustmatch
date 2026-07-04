@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
-import { ShieldCheck, ArrowRight, Heart, Lock, Users, Star } from 'lucide-react';
+import { ShieldCheck, ArrowRight, Heart, Lock, Eye, MapPin } from 'lucide-react';
 
 const features = [
-  { icon: ShieldCheck, title: 'Verified Identities', desc: 'Secure verification for genuine profiles.' },
-  { icon: Lock, title: 'Privacy First', desc: 'Your data. Your control. Always.' },
-  { icon: Users, title: 'Date Safety Mode', desc: 'Pre-meet safety tools & trusted contacts.' },
-  { icon: Star, title: 'Shared Experiences', desc: 'Events, hobbies & interests to help you connect.' },
+  { icon: ShieldCheck, title: 'Verified, Not Guessing', desc: 'Real ID checks, so who you match with is who you meet.' },
+  { icon: Eye, title: 'Quietly Watching Your Back', desc: 'Our Safety Center and moderated alerts flag risk without turning into a public pile-on.' },
+  { icon: MapPin, title: 'Date Safety Tracker', desc: 'Share your plans with someone you trust, one tap.' },
+  { icon: Lock, title: 'Private & Secure Messaging', desc: 'Your conversations stay yours.' },
 ];
 
 export default function LandingHero() {
@@ -28,21 +28,12 @@ export default function LandingHero() {
             <span className="font-heading font-extrabold text-2xl md:text-3xl text-foreground tracking-tight">Trust Matches</span>
           </div>
 
-          <p className="text-xs md:text-sm font-semibold tracking-[0.2em] uppercase text-muted-foreground mb-4">
-            Real People. Real Connections. Built on Trust.
-          </p>
-
-          <div className="flex items-center justify-center gap-3 mb-5">
-            <div className="w-12 h-px bg-border" />
-            <Heart className="text-primary fill-primary" size={16} />
-            <div className="w-12 h-px bg-border" />
-          </div>
+          <h1 className="font-heading font-extrabold text-4xl md:text-6xl text-foreground tracking-tight mb-5">
+            Meet People You Can Actually Trust
+          </h1>
 
           <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">
-            A dating platform designed for people who value{' '}
-            <span className="font-semibold text-primary">authenticity</span>,{' '}
-            <span className="font-semibold text-primary">safety</span>, and{' '}
-            <span className="font-semibold text-primary">meaningful</span> relationships.
+            Every profile verified. Every date, a little safer. TrustMatch is dating that feels good and has your back.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center mt-8">
@@ -52,12 +43,12 @@ export default function LandingHero() {
             >
               Join Free <ArrowRight size={18} />
             </Link>
-            <a
-              href="#safety"
+            <Link
+              to="/safety-center"
               className="inline-flex items-center justify-center gap-2 border border-border bg-card/50 backdrop-blur-sm text-foreground px-8 py-4 rounded-full font-semibold hover:bg-secondary transition"
             >
-              Learn About Safety
-            </a>
+              See How Safety Works
+            </Link>
           </div>
         </div>
 
@@ -81,11 +72,11 @@ export default function LandingHero() {
           <div className="absolute bottom-6 right-4 md:right-8 bg-card/70 backdrop-blur-xl border border-border rounded-2xl p-5 shadow-xl max-w-[240px]">
             <div className="flex items-center gap-2.5 mb-1.5">
               <div className="w-10 h-10 rounded-xl bg-primary/15 flex items-center justify-center">
-                <ShieldCheck size={22} className="text-primary" />
+                <Heart size={22} className="text-primary fill-primary" />
               </div>
               <div>
-                <p className="font-bold text-sm text-foreground tracking-wide">VERIFIED PROFILES</p>
-                <p className="text-xs text-muted-foreground">Real people. Genuine connections.</p>
+                <p className="font-bold text-sm text-foreground tracking-wide">REAL CONNECTIONS</p>
+                <p className="text-xs text-muted-foreground">Genuine moments, backed by trust.</p>
               </div>
             </div>
           </div>
