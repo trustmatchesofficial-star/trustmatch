@@ -8,7 +8,6 @@ import LandingFoundingMember from '@/components/landing/LandingFoundingMember';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
 import LandingHowVerificationWorks from '@/components/landing/LandingHowVerificationWorks';
 import LandingDateSafetyTracker from '@/components/landing/LandingDateSafetyTracker';
-import LandingSafetyGrid from '@/components/landing/LandingSafetyGrid';
 import LandingSafetyBanner from '@/components/landing/LandingSafetyBanner';
 import LandingTestimonials from '@/components/landing/LandingTestimonials';
 import LandingStats from '@/components/landing/LandingStats';
@@ -37,17 +36,11 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <LandingHeader />
-      <img
-        src="https://media.base44.com/images/public/6a3ebc375433828e3faa9c58/8d88c8f12_IMG_7752.jpg"
-        alt="Trust Matches — Real People. Real Connections. Built on Trust. Verified Identities, Privacy First, Date Safety Mode, Shared Experiences."
-        className="w-full h-auto"
-      />
       <LandingHero />
       <LandingStats />
       <LandingFoundingMember />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />
-      <LandingSafetyGrid />
       <LandingSafetyBanner />
       <LandingHowVerificationWorks />
       <LandingTestimonials />
