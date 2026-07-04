@@ -9,6 +9,9 @@ import LandingDateSafetyTracker from '@/components/landing/LandingDateSafetyTrac
 import LandingSafetyGrid from '@/components/landing/LandingSafetyGrid';
 import LandingSafetyBanner from '@/components/landing/LandingSafetyBanner';
 import LandingTestimonials from '@/components/landing/LandingTestimonials';
+import LandingStats from '@/components/landing/LandingStats';
+import LandingPricing from '@/components/landing/LandingPricing';
+import LandingDownloadCTA from '@/components/landing/LandingDownloadCTA';
 import LandingFAQ from '@/components/landing/LandingFAQ';
 import LandingFooter from '@/components/landing/LandingFooter';
 
@@ -38,12 +41,15 @@ export default function Landing() {
         className="w-full h-auto"
       />
       <LandingHero />
+      <LandingStats />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />
       <LandingSafetyGrid />
       <LandingSafetyBanner />
       <LandingTestimonials />
+      <LandingPricing />
       <LandingFAQ />
+      <LandingDownloadCTA />
       <LandingFooter />
     </div>
   );
