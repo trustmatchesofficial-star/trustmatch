@@ -7,7 +7,7 @@ const PLANS = [
   {
     id: 'monthly',
     name: 'Monthly',
-    price: '$19.99',
+    price: '£9.99',
     period: '/month',
     color: 'border-border',
     badge: null,
