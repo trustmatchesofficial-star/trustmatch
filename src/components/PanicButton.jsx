@@ -1,6 +1,17 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
-import { Siren, Loader2, X, ShieldAlert, Phone } from 'lucide-react';
+import { Siren, Loader2, X, ShieldAlert, Phone, MapPin } from 'lucide-react';
+
+function getCurrentLocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) return resolve(null);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: pos.coords.accuracy }),
+      () => resolve(null),
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+    );
+  });
+}
 
 export default function PanicButton({ profile, variant = 'full' }) {
   const [armed, setArmed] = useState(false);
@@ -15,7 +26,11 @@ export default function PanicButton({ profile, variant = 'full' }) {
     setSending(true);
     setError(null);
     try {
-      const res = await base44.functions.invoke('triggerPanic', { user_id: profile.created_by_id });
+      const location = await getCurrentLocation();
+      const res = await base44.functions.invoke('triggerPanic', {
+        user_id: profile.created_by_id,
+        location,
+      });
       if (res.data?.error) throw new Error(res.data.error);
       setResult(res.data);
       setDone(true);
@@ -59,6 +74,11 @@ export default function PanicButton({ profile, variant = 'full' }) {
                 <p className="text-muted-foreground text-sm mb-2">
                   We've alerted your emergency contact and our safety team.
                 </p>
+                {result?.locationShared && (
+                  <p className="flex items-center justify-center gap-1.5 text-teal text-xs font-medium mb-3">
+                    <MapPin size={13} /> Live location shared with your contact
+                  </p>
+                )}
                 {result?.showSos && (
                   <p className="flex items-center justify-center gap-1.5 text-destructive text-sm font-medium mb-5">
                     <Phone size={14} /> If in immediate danger, call 999 now.
@@ -74,9 +94,13 @@ export default function PanicButton({ profile, variant = 'full' }) {
                   <Siren className="text-destructive" size={32} />
                 </div>
                 <h2 className="text-xl font-heading font-bold text-center mb-2">Trigger safety SOS?</h2>
-                <p className="text-muted-foreground text-sm text-center mb-6">
-                  This will immediately alert your emergency contact and our safety team. Only use this in a real safety situation.
+                <p className="text-muted-foreground text-sm text-center mb-4">
+                  This will immediately alert your emergency contact and our safety team with your live location. Only use this in a real safety situation.
                 </p>
+                <div className="mb-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
+                  <MapPin size={13} className="text-primary" />
+                  We'll capture your GPS location when you send
+                </div>
                 {error && (
                   <div className="mb-4 bg-destructive/10 border border-destructive/30 rounded-xl p-3 text-center">
                     <p className="text-destructive text-sm font-medium">{error}</p>

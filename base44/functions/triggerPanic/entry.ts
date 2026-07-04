@@ -7,6 +7,16 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
     const userId = user.id;
 
+    let body = {};
+    try { body = await req.json(); } catch { /* no body */ }
+    const location = body.location || null;
+    const mapsLink = location
+      ? 'https://www.google.com/maps?q=' + location.lat + ',' + location.lng
+      : null;
+    const locationLine = mapsLink
+      ? 'Approximate location: ' + mapsLink + '\n'
+      : '';
+
     const settings = await base44.asServiceRole.entities.SafetySetting.filter({ created_by_id: userId });
     const setting = settings[0];
     const profiles = await base44.asServiceRole.entities.Profile.filter({ created_by_id: userId });
@@ -23,8 +33,9 @@ Deno.serve(async (req) => {
 
     let emailSent = false;
     let emailError = null;
+    let inAppContactNotified = false;
 
-    // 1) Alert the saved emergency contact by email (their phone is included for the safety team to text/call).
+    // 1) Alert the saved emergency contact by email with location link.
     if (notifyContact && contactEmail) {
       try {
         await base44.asServiceRole.integrations.Core.SendEmail({
@@ -35,15 +46,40 @@ Deno.serve(async (req) => {
             name + ' just triggered a Safety SOS alert on Trust Matches. They may need help — please try to reach them right away.\n\n' +
             (contactPhone ? 'You were listed as their emergency contact.\n\n' : '') +
             'Time: ' + new Date().toISOString() + '\n' +
+            locationLine +
             'This alert was sent automatically by Trust Matches Safety.',
         });
         emailSent = true;
       } catch (e) {
         emailError = String(e);
+        console.error('SOS email error:', emailError);
       }
     }
 
-    // 2) Escalate to the platform safety team (admins) with the contact details so they can text/call.
+    // 1b) Try to match emergency contact to a platform user by email — send in-app notification if matched.
+    if (notifyContact && contactEmail) {
+      try {
+        const matchedUsers = await base44.asServiceRole.entities.User.list();
+        const contactUser = matchedUsers.find((u) => u.email && u.email.toLowerCase() === contactEmail.toLowerCase());
+        if (contactUser) {
+          await base44.asServiceRole.entities.Notification.create({
+            user_id: contactUser.id,
+            type: 'system',
+            title: 'EMERGENCY SOS from ' + name,
+            body:
+              name + ' triggered a Safety SOS alert and listed you as their emergency contact. ' +
+              (mapsLink ? 'Their location: ' + mapsLink : 'Location was unavailable.') +
+              ' Please reach out to them immediately.',
+            is_read: false,
+          });
+          inAppContactNotified = true;
+        }
+      } catch (e) {
+        console.error('SOS in-app contact match error:', String(e));
+      }
+    }
+
+    // 2) Escalate to the platform safety team (admins) with contact details + location.
     const contactSummary =
       (contactName ? 'Contact: ' + contactName : '') +
       (contactPhone ? (contactName ? ' · ' : 'Phone: ') + contactPhone : '') +
@@ -60,6 +96,7 @@ Deno.serve(async (req) => {
           body:
             name + ' triggered a panic alert. Escalation mode: ' + mode + '. ' +
             'Emergency contact: ' + contactSummary + '. ' +
+            (mapsLink ? 'Location: ' + mapsLink + '. ' : '') +
             (notifyContact && contactEmail ? 'Email alert sent.' : 'No email alert sent (no contact email on file).'),
           is_read: false,
         });
@@ -69,12 +106,14 @@ Deno.serve(async (req) => {
     // 3) Confirm to the user what happened.
     let userBody;
     if (notifyContact && contactEmail && emailSent) {
-      userBody = 'We alerted your emergency contact' + (contactName ? ' ' + contactName : '') + ' by email and notified our safety team.';
+      userBody = 'We alerted your emergency contact' + (contactName ? ' ' + contactName : '') + ' by email' +
+        (inAppContactNotified ? ' and in-app' : '') + ' and notified our safety team.';
     } else if (notifyContact && !contactEmail) {
       userBody = 'We notified our safety team, but no emergency contact email is saved in your settings — add one so alerts reach them directly.';
     } else {
       userBody = 'We notified our safety team.';
     }
+    if (mapsLink) userBody += ' Your live location was shared.';
     if (showSos) userBody += ' If you are in immediate danger, call 999.';
 
     await base44.asServiceRole.entities.Notification.create({
@@ -93,8 +132,11 @@ Deno.serve(async (req) => {
       contactEmail: !!contactEmail,
       contactPhone: !!contactPhone,
       emailError,
+      locationShared: !!mapsLink,
+      inAppContactNotified,
     });
   } catch (error) {
+    console.error('triggerPanic error:', error.message);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
