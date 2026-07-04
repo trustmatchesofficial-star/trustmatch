@@ -7,6 +7,7 @@ import TrustScoreBadge from '@/components/TrustScoreBadge';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import FoundingMemberBadge from '@/components/FoundingMemberBadge';
 import BadgeDisplay from '@/components/BadgeDisplay';
+import ProfileRatingTrend from '@/components/ProfileRatingTrend';
 
 const INTERESTS = ['Travel', 'Foodie', 'Fitness', 'Music', 'Movies', 'Art', 'Reading', 'Gaming', 'Hiking', 'Cooking', 'Dogs', 'Cats', 'Photography', 'Dancing', 'Yoga', 'Coffee', 'Wine', 'Tech'];
 
@@ -144,6 +145,9 @@ export default function ProfilePage() {
             <Check size={18} className="text-teal" />
           </button>
         )}
+
+        {/* Rating trend chart */}
+        <ProfileRatingTrend profile={profile} />
 
         {/* Bio */}
         <div className="mb-6">
