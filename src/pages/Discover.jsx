@@ -11,7 +11,37 @@ import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell, P
 import { Link } from 'react-router-dom';
 import TopPicks from '@/components/TopPicks';
 import PassportModal from '@/components/PassportModal';
+import TopRatedBadge from '@/components/TopRatedBadge';
 import { sortByCompatibility, computeCompatibilityScore } from '@/utils/matchmaking';
+
+// A profile qualifies as "Top Rated" if they have 10+ feedback records
+// and their average safety AND comfort ratings across the last 10 are both >= 4.5.
+const TOP_RATED_MIN_FEEDBACK = 10;
+const TOP_RATED_MIN_AVG = 4.5;
+
+async function fetchTopRatedUserIds() {
+  const all = await base44.entities.DateFeedback.list('-created_date', 500);
+  const byReviewed = {};
+  for (const fb of all) {
+    if (!fb.reviewed_id) continue;
+    if (!byReviewed[fb.reviewed_id]) byReviewed[fb.reviewed_id] = [];
+    byReviewed[fb.reviewed_id].push(fb);
+  }
+  const result = new Set();
+  for (const [userId, feedbacks] of Object.entries(byReviewed)) {
+    const last10 = feedbacks.slice(0, TOP_RATED_MIN_FEEDBACK);
+    if (last10.length < TOP_RATED_MIN_FEEDBACK) continue;
+    const safetyRatings = last10.map((f) => f.safety_rating).filter((r) => typeof r === 'number');
+    const comfortRatings = last10.map((f) => f.comfort_rating).filter((r) => typeof r === 'number');
+    if (safetyRatings.length === 0 || comfortRatings.length === 0) continue;
+    const avgSafety = safetyRatings.reduce((a, b) => a + b, 0) / safetyRatings.length;
+    const avgComfort = comfortRatings.reduce((a, b) => a + b, 0) / comfortRatings.length;
+    if (avgSafety >= TOP_RATED_MIN_AVG && avgComfort >= TOP_RATED_MIN_AVG) {
+      result.add(userId);
+    }
+  }
+  return result;
+}
 
 export default function Discover() {
   const { profile, setProfile } = useOutletContext();
@@ -52,11 +82,16 @@ export default function Discover() {
           p.is_active &&
           p.is_onboarded
       );
+
+      // Fetch Top Rated status for all candidates in one pass.
+      const topRatedIds = await fetchTopRatedUserIds();
+
       // Smart matchmaking: sort by compatibility score (shared interests, distance, preferences)
       setProfiles(sortByCompatibility(filtered, profile).map((p) => ({
         ...p,
         _compatibility: computeCompatibilityScore(p, profile),
         _sharedInterests: (p.interests || []).filter((i) => (profile.interests || []).includes(i)),
+        _isTopRated: topRatedIds.has(p.created_by_id),
       })));
     } catch (err) {
       console.error(err);
@@ -398,6 +433,7 @@ export default function Discover() {
                   onBlock={setBlockTarget}
                   compatibilityScore={p._compatibility}
                   sharedInterests={p._sharedInterests}
+                  isTopRated={p._isTopRated}
                 />
               ))}
             </div>

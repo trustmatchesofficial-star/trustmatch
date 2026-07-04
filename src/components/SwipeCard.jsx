@@ -1,11 +1,12 @@
-import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck, Crown, Sparkles } from 'lucide-react';
+import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck, Crown, Sparkles, Award } from 'lucide-react';
 import TrustScoreBadge from './TrustScoreBadge';
 import VerifiedBadge from './VerifiedBadge';
 import SafetyCheckBanner from './SafetyCheckBanner';
 import FoundingMemberBadge from './FoundingMemberBadge';
 import BadgeDisplay from './BadgeDisplay';
+import TopRatedBadge from './TopRatedBadge';
 
-export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock, compatibilityScore, sharedInterests }) {
+export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock, compatibilityScore, sharedInterests, isTopRated }) {
   if (!profile) return null;
 
   const photo = profile.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800`;
@@ -95,6 +96,11 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
             {profile.is_founding_member && (
               <span className="inline-flex items-center gap-1 bg-gold/25 backdrop-blur-md text-gold px-2 py-0.5 rounded-full text-[10px] font-semibold border border-gold/40">
                 <Crown size={11} className="fill-gold" /> Founding Member{profile.founding_member_number ? ` #${profile.founding_member_number}` : ''}
+              </span>
+            )}
+            {isTopRated && (
+              <span className="inline-flex items-center gap-1 bg-purplecustom/30 backdrop-blur-md text-white px-2 py-0.5 rounded-full text-[10px] font-semibold border border-purplecustom/50">
+                <Award size={11} className="fill-white" /> Top Rated
               </span>
             )}
           </div>
