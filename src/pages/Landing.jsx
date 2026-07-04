@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import LandingHeader from '@/components/landing/LandingHeader';
 import LandingHero from '@/components/landing/LandingHero';
+import LandingPrivacyBanner from '@/components/landing/LandingPrivacyBanner';
 import LandingFoundingMember from '@/components/landing/LandingFoundingMember';
 import LandingHowItWorks from '@/components/landing/LandingHowItWorks';
 import LandingHowVerificationWorks from '@/components/landing/LandingHowVerificationWorks';
+import LandingTrustScoreExplainer from '@/components/landing/LandingTrustScoreExplainer';
 import LandingDateSafetyTracker from '@/components/landing/LandingDateSafetyTracker';
 import LandingSafetyBanner from '@/components/landing/LandingSafetyBanner';
 import LandingTestimonials from '@/components/landing/LandingTestimonials';
@@ -37,12 +39,14 @@ export default function Landing() {
     <div className="min-h-screen bg-background">
       <LandingHeader />
       <LandingHero />
+      <LandingPrivacyBanner />
       <LandingStats />
       <LandingFoundingMember />
       <LandingHowItWorks />
       <LandingDateSafetyTracker />
       <LandingSafetyBanner />
       <LandingHowVerificationWorks />
+      <LandingTrustScoreExplainer />
       <LandingTestimonials />
       <LandingPricing />
       <LandingFAQ />

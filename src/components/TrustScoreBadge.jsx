@@ -16,7 +16,7 @@ export function computeTrustScore(profile) {
 }
 
 export function getTrustTier(score) {
-  if (score >= 90) return { label: 'Verified', color: 'text-teal', bg: 'bg-teal/15', dot: 'bg-teal' };
+  if (score >= 90) return { label: 'High Confidence', color: 'text-teal', bg: 'bg-teal/15', dot: 'bg-teal' };
   if (score >= 70) return { label: 'Likely Real', color: 'text-teal', bg: 'bg-teal/10', dot: 'bg-teal/80' };
   if (score >= 40) return { label: 'Use Caution', color: 'text-gold', bg: 'bg-gold/15', dot: 'bg-gold' };
   return { label: 'High Risk', color: 'text-destructive', bg: 'bg-destructive/15', dot: 'bg-destructive' };

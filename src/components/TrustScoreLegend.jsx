@@ -1,10 +1,10 @@
 import { Shield } from 'lucide-react';
 
 const TIERS = [
-  { range: '90–100', label: 'Verified', desc: 'Identity confirmed with ID document and selfie check.', color: 'text-teal', bg: 'bg-teal/15', dot: 'bg-teal' },
-  { range: '70–89', label: 'Likely Real', desc: 'Profile looks genuine, but identity not fully verified.', color: 'text-teal', bg: 'bg-teal/10', dot: 'bg-teal/80' },
-  { range: '40–69', label: 'Use Caution', desc: 'Limited verification signals. Take extra care.', color: 'text-gold', bg: 'bg-gold/15', dot: 'bg-gold' },
-  { range: '0–39', label: 'High Risk', desc: 'Few or no verification signals. Proceed only with caution.', color: 'text-destructive', bg: 'bg-destructive/15', dot: 'bg-destructive' },
+  { range: '90–100', label: 'High Confidence', desc: 'Identity verified, profile complete, and actively using the app.', color: 'text-teal', bg: 'bg-teal/15', dot: 'bg-teal' },
+  { range: '70–89', label: 'Likely Real', desc: 'Mostly verified and active — a good sign, but still use your judgement.', color: 'text-teal', bg: 'bg-teal/10', dot: 'bg-teal/80' },
+  { range: '40–69', label: 'Use Caution', desc: 'Limited verification or activity. Take things slowly and meet in public.', color: 'text-gold', bg: 'bg-gold/15', dot: 'bg-gold' },
+  { range: '0–39', label: 'High Risk', desc: 'Unverified, inactive, or flagged. Exercise significant caution.', color: 'text-destructive', bg: 'bg-destructive/15', dot: 'bg-destructive' },
 ];
 
 export default function TrustScoreLegend({ showDisclaimer = true }) {
