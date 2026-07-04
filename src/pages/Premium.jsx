@@ -1,7 +1,7 @@
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { useState } from 'react';
-import { Crown, Check, Sparkles, Heart, Eye, SlidersHorizontal, TrendingUp, Coins } from 'lucide-react';
+import { Crown, Check, Sparkles, Heart, Eye, Star, Plane, Mic, Video, TrendingUp, Coins } from 'lucide-react';
 
 const PLANS = [
   {
@@ -32,9 +32,13 @@ const PLANS = [
 
 const FEATURES = [
   { icon: Heart, title: 'Unlimited Likes', desc: 'Like as many profiles as you want — no daily limits.' },
-  { icon: Eye, title: 'See Who Liked You', desc: 'Skip the guesswork and see who\'s interested in you.' },
-  { icon: SlidersHorizontal, title: 'Advanced Filters', desc: 'Filter by interests, education, lifestyle, and more.' },
-  { icon: TrendingUp, title: 'Profile Boost', desc: 'Get boosted to the top of discovery for 30 minutes.' },
+  { icon: Eye, title: 'See Who Liked You', desc: 'See everyone who liked you and match instantly.' },
+  { icon: Star, title: '5 Super Likes / Day', desc: 'Stand out and show someone you\'re really interested.' },
+  { icon: TrendingUp, title: 'Profile Boost', desc: 'Be seen by more people — top of discovery for 30 min.' },
+  { icon: Sparkles, title: 'Top Picks', desc: 'Daily curated matches based on your preferences.' },
+  { icon: Plane, title: 'Passport', desc: 'Change your location and discover people worldwide.' },
+  { icon: Mic, title: 'Voice Messages', desc: 'Record and send voice notes in your chats.' },
+  { icon: Video, title: 'Video Calls', desc: 'Call your matches face-to-face, right in the app.' },
 ];
 
 export default function Premium() {

@@ -6,11 +6,13 @@ import MessageSafetyBanner, { detectUnsafe } from '@/components/MessageSafetyBan
 import PanicButton from '@/components/PanicButton';
 import DateCheckInScheduler from '@/components/DateCheckInScheduler';
 import PostDateFeedbackModal from '@/components/PostDateFeedbackModal';
-import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar, Star } from 'lucide-react';
+import { ArrowLeft, Send, MoreVertical, BadgeCheck, Flag, Ban, Calendar, Star, Video } from 'lucide-react';
 import BlockModal from '@/components/BlockModal';
 import ReportModal from '@/components/ReportModal';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import SafetyCheckBanner from '@/components/SafetyCheckBanner';
+import VoiceRecorder from '@/components/VoiceRecorder';
+import VideoCallModal from '@/components/VideoCallModal';
 
 export default function Chat() {
   const { matchId } = useParams();
@@ -28,6 +30,7 @@ export default function Chat() {
   const [reportTarget, setReportTarget] = useState(null);
   const [showCheckIn, setShowCheckIn] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [showVideoCall, setShowVideoCall] = useState(false);
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -78,6 +81,25 @@ export default function Chat() {
     }
   };
 
+  const handleSendVoice = async (audioUrl) => {
+    if (!match || !profile) return;
+    const otherId = match.user_a === profile.created_by_id ? match.user_b : match.user_a;
+    try {
+      const msg = await base44.entities.Message.create({
+        match_id: matchId,
+        sender_id: profile.created_by_id,
+        receiver_id: otherId,
+        content: '🎤 Voice message',
+        message_type: 'voice',
+        audio_url: audioUrl,
+      });
+      setMessages((m) => [...m, msg]);
+      await base44.entities.Match.update(matchId, { last_message_at: new Date().toISOString() });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
@@ -103,6 +125,13 @@ export default function Chat() {
           </div>
           <p className="text-xs text-green-500">Active now</p>
         </div>
+        <button
+          onClick={() => setShowVideoCall(true)}
+          className="p-2 hover:bg-primary/10 hover:text-primary rounded-full transition text-muted-foreground"
+          title="Video call"
+        >
+          <Video size={20} />
+        </button>
         <button
           onClick={() => setReportTarget(otherProfile)}
           className="p-2 hover:bg-destructive/10 hover:text-destructive rounded-full transition text-muted-foreground"
@@ -172,6 +201,7 @@ export default function Chat() {
             </div>
           ) : (
             <div className="flex items-center gap-2">
+              <VoiceRecorder onSend={handleSendVoice} disabled={isBlockedByMe || isBlockedByThem} />
               <input
                 type="text"
                 value={input}
@@ -217,6 +247,14 @@ export default function Chat() {
           matchId={matchId}
           otherProfile={otherProfile}
           onClose={() => setShowFeedback(false)}
+        />
+      )}
+      {showVideoCall && match && otherProfile && (
+        <VideoCallModal
+          match={match}
+          profile={profile}
+          otherProfile={otherProfile}
+          onClose={() => setShowVideoCall(false)}
         />
       )}
     </div>

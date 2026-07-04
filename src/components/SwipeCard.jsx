@@ -15,6 +15,8 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
           ? 'translate-x-[120%] rotate-12 opacity-0'
           : swipeDirection === 'left'
           ? '-translate-x-[120%] -rotate-12 opacity-0'
+          : swipeDirection === 'up'
+          ? '-translate-y-[120%] scale-110 opacity-0'
           : ''
       }`}
     >

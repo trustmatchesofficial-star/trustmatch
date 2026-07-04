@@ -13,6 +13,18 @@
     },
     "content": {
       "type": "string"
+    },
+    "message_type": {
+      "type": "string",
+      "enum": [
+        "text",
+        "voice",
+        "call_signal"
+      ],
+      "default": "text"
+    },
+    "audio_url": {
+      "type": "string"
     }
   },
   "required": [

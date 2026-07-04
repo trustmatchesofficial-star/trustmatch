@@ -7,7 +7,10 @@ import NotificationBell from '@/components/NotificationBell';
 import ReportModal from '@/components/ReportModal';
 import BlockModal from '@/components/BlockModal';
 import OnboardingChecklist from '@/components/OnboardingChecklist';
-import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell } from 'lucide-react';
+import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell, Plane, Zap, Lock, Undo2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import TopPicks from '@/components/TopPicks';
+import PassportModal from '@/components/PassportModal';
 
 export default function Discover() {
   const { profile, setProfile } = useOutletContext();
@@ -23,6 +26,9 @@ export default function Discover() {
   const [ageMax, setAgeMax] = useState(99);
   const [reportTarget, setReportTarget] = useState(null);
   const [blockTarget, setBlockTarget] = useState(null);
+  const [lastSwiped, setLastSwiped] = useState(null);
+  const [showPassport, setShowPassport] = useState(false);
+  const [boostActive, setBoostActive] = useState(false);
 
   const loadProfiles = async () => {
     setLoading(true);
@@ -45,6 +51,23 @@ export default function Discover() {
           p.is_active &&
           p.is_onboarded
       );
+      const now = new Date();
+      const passport = profile.passport_location;
+      filtered.sort((a, b) => {
+        const aBoosted = a.boosted_until && new Date(a.boosted_until) > now;
+        const bBoosted = b.boosted_until && new Date(b.boosted_until) > now;
+        if (aBoosted && !bBoosted) return -1;
+        if (!aBoosted && bBoosted) return 1;
+        if (passport) {
+          const aMatch = a.location === passport;
+          const bMatch = b.location === passport;
+          if (aMatch && !bMatch) return -1;
+          if (!aMatch && bMatch) return 1;
+        }
+        if (a.is_verified && !b.is_verified) return -1;
+        if (!a.is_verified && b.is_verified) return 1;
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
       setProfiles(filtered);
     } catch (err) {
       console.error(err);
@@ -59,6 +82,7 @@ export default function Discover() {
   const handleSwipe = async (direction) => {
     if (profiles.length === 0) return;
     const current = profiles[0];
+    setLastSwiped(current);
     setSwipeDirection(direction);
 
     try {
@@ -117,6 +141,105 @@ export default function Discover() {
     }, 300);
   };
 
+  const handleSuperLike = async () => {
+    if (profiles.length === 0) return;
+    if (!profile?.is_premium && (profile?.super_likes_remaining || 0) <= 0) return;
+    const current = profiles[0];
+    setLastSwiped(null);
+    setSwipeDirection('up');
+
+    try {
+      await base44.entities.Like.create({
+        liker_id: profile.created_by_id,
+        liked_id: current.id,
+        action: 'superlike',
+      });
+
+      if (!profile?.is_premium) {
+        const updated = await base44.entities.Profile.update(profile.id, {
+          super_likes_remaining: Math.max(0, (profile.super_likes_remaining || 5) - 1),
+        });
+        setProfile(updated);
+      }
+
+      const mutual = await base44.entities.Like.filter({
+        liker_id: current.id,
+        liked_id: profile.created_by_id,
+        action: 'like',
+      });
+      const superMutual = await base44.entities.Like.filter({
+        liker_id: current.id,
+        liked_id: profile.created_by_id,
+        action: 'superlike',
+      });
+      if (mutual.length > 0 || superMutual.length > 0) {
+        const newMatch = await base44.entities.Match.create({
+          user_a: profile.created_by_id,
+          user_b: current.id,
+          status: 'active',
+        });
+        await base44.entities.Notification.create({
+          user_id: current.created_by_id,
+          type: 'match',
+          title: `It's a match with ${profile.full_name}!`,
+          body: `${profile.full_name} super-liked you! Say hello!`,
+          match_id: newMatch.id,
+          related_profile_id: profile.id,
+          is_read: false,
+        });
+        await base44.entities.Notification.create({
+          user_id: profile.created_by_id,
+          type: 'match',
+          title: `It's a match with ${current.full_name}!`,
+          body: `You and ${current.full_name} liked each other. Say hello!`,
+          match_id: newMatch.id,
+          related_profile_id: current.id,
+          is_read: true,
+        });
+        setMatch(current);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    setTimeout(() => {
+      setProfiles((p) => p.slice(1));
+      setSwipeDirection(null);
+    }, 300);
+  };
+
+  const handleRewind = async () => {
+    if (!lastSwiped) return;
+    try {
+      const likes = await base44.entities.Like.filter({
+        liker_id: profile.created_by_id,
+        liked_id: lastSwiped.id,
+      });
+      if (likes[0]) {
+        await base44.entities.Like.delete(likes[0].id);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+    setProfiles((p) => [lastSwiped, ...p]);
+    setLastSwiped(null);
+  };
+
+  const handleBoost = async () => {
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 30);
+    try {
+      const updated = await base44.entities.Profile.update(profile.id, {
+        boosted_until: expires.toISOString(),
+      });
+      setProfile(updated);
+      setBoostActive(true);
+      setTimeout(() => setBoostActive(false), 30 * 60 * 1000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
@@ -149,6 +272,15 @@ export default function Discover() {
             </div>
             <div className="flex items-center gap-2">
               <NotificationBell profile={profile} />
+              <Link to="/liked-you" className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition relative" title="Likes You">
+                <Heart size={18} />
+                {!profile?.is_premium && (
+                  <Lock size={10} className="absolute -bottom-0.5 -right-0.5 text-gold bg-card rounded-full p-0.5 w-3.5 h-3.5" />
+                )}
+              </Link>
+              <button onClick={() => setShowPassport(true)} className={`w-9 h-9 rounded-full bg-card border flex items-center justify-center transition ${profile?.passport_location ? 'border-primary text-primary' : 'border-border text-muted-foreground hover:text-foreground'}`} title="Passport">
+                <Plane size={18} />
+              </button>
               <button onClick={() => setShowFilters(!showFilters)} className="w-9 h-9 rounded-full bg-card border border-border flex items-center justify-center text-muted-foreground hover:text-foreground transition">
                 <SlidersHorizontal size={18} />
               </button>
@@ -182,6 +314,30 @@ export default function Discover() {
             ))}
           </div>
         </div>
+
+        {/* Top Picks */}
+        <div className="px-6">
+          <TopPicks profile={profile} />
+        </div>
+
+        {/* Boost banner */}
+        {profile?.is_premium && !boostActive && (
+          <div className="px-6 mb-2">
+            <button
+              onClick={handleBoost}
+              className="w-full flex items-center justify-center gap-2 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold text-xs font-semibold hover:bg-gold/20 transition"
+            >
+              <Zap size={14} /> Boost my profile — be seen by more people (30 min)
+            </button>
+          </div>
+        )}
+        {boostActive && (
+          <div className="px-6 mb-2">
+            <div className="w-full flex items-center justify-center gap-2 py-2 rounded-full bg-gold/20 border border-gold/30 text-gold text-xs font-semibold">
+              <Zap size={14} className="animate-pulse" /> Profile boosted — you're being seen first!
+            </div>
+          </div>
+        )}
 
         {/* Cards */}
         <div className="flex-1 px-6 py-4">
@@ -219,7 +375,15 @@ export default function Discover() {
 
         {/* Actions */}
         {profiles.length > 0 && (
-          <div className="flex items-center justify-center gap-6 pb-24 md:pb-8">
+          <div className="flex items-center justify-center gap-4 pb-24 md:pb-8">
+            <button
+              onClick={handleRewind}
+              disabled={!lastSwiped}
+              className="w-12 h-12 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-primary hover:text-primary transition-all hover:scale-105 disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Rewind last swipe"
+            >
+              <Undo2 size={22} />
+            </button>
             <button
               onClick={() => handleSwipe('left')}
               className="w-14 h-14 rounded-full bg-card border-2 border-border flex items-center justify-center shadow-lg hover:border-destructive hover:text-destructive transition-all hover:scale-105"
@@ -227,9 +391,17 @@ export default function Discover() {
               <X size={28} />
             </button>
             <button
-              className="w-12 h-12 rounded-full bg-card border-2 border-gold flex items-center justify-center shadow-lg hover:scale-110 transition-all text-gold"
+              onClick={handleSuperLike}
+              disabled={!profile?.is_premium && (profile?.super_likes_remaining || 0) <= 0}
+              className="relative w-12 h-12 rounded-full bg-card border-2 border-gold flex items-center justify-center shadow-lg hover:scale-110 transition-all text-gold disabled:opacity-40"
+              title={profile?.is_premium ? 'Super Like' : `${profile?.super_likes_remaining || 0} Super Likes left`}
             >
               <Star size={24} className="fill-current" />
+              {!profile?.is_premium && (profile?.super_likes_remaining || 0) > 0 && (
+                <span className="absolute -top-1 -right-1 bg-gold text-background text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {profile?.super_likes_remaining || 0}
+                </span>
+              )}
             </button>
             <button
               onClick={() => handleSwipe('right')}
@@ -316,6 +488,13 @@ export default function Discover() {
         onClose={() => setBlockTarget(null)}
         onBlocked={loadProfiles}
       />
+      {showPassport && (
+        <PassportModal
+          profile={profile}
+          setProfile={setProfile}
+          onClose={() => setShowPassport(false)}
+        />
+      )}
     </>
   );
 }

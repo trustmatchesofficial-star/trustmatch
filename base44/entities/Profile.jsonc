@@ -69,6 +69,17 @@
       "type": "number",
       "default": 0
     },
+    "super_likes_remaining": {
+      "type": "number",
+      "default": 5
+    },
+    "boosted_until": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "passport_location": {
+      "type": "string"
+    },
     "is_onboarded": {
       "type": "boolean",
       "default": false

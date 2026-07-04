@@ -21,6 +21,7 @@ import Messages from '@/pages/Messages';
 import Chat from '@/pages/Chat';
 import ProfilePage from '@/pages/ProfilePage';
 import Premium from '@/pages/Premium';
+import LikedYou from '@/pages/LikedYou';
 import Admin from '@/pages/Admin';
 import OnboardingDashboard from '@/pages/OnboardingDashboard';
 import SafetyHub from '@/pages/SafetyHub';
@@ -65,6 +66,7 @@ const AuthenticatedApp = () => {
           <Route path="/chat/:matchId" element={<Chat />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/premium" element={<Premium />} />
+          <Route path="/liked-you" element={<LikedYou />} />
           <Route path="/safety-hub" element={<SafetyHub />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/safety-center" element={<SafetyCenter />} />

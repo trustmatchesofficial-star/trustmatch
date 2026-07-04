@@ -12,7 +12,8 @@
       "type": "string",
       "enum": [
         "like",
-        "pass"
+        "pass",
+        "superlike"
       ],
       "default": "like"
     }
