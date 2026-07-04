@@ -1,14 +1,20 @@
-import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck, Crown } from 'lucide-react';
+import { BadgeCheck, MapPin, Flag, Ban, ShieldCheck, Crown, Sparkles } from 'lucide-react';
 import TrustScoreBadge from './TrustScoreBadge';
 import VerifiedBadge from './VerifiedBadge';
 import SafetyCheckBanner from './SafetyCheckBanner';
 import FoundingMemberBadge from './FoundingMemberBadge';
 import BadgeDisplay from './BadgeDisplay';
 
-export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock }) {
+export default function SwipeCard({ profile, isTop, swipeDirection, onReport, onBlock, compatibilityScore, sharedInterests }) {
   if (!profile) return null;
 
   const photo = profile.photos?.[0] || `https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800`;
+  const compat = typeof compatibilityScore === 'number' ? Math.min(99, compatibilityScore) : null;
+  const compatTier = compat !== null
+    ? compat >= 70 ? { label: 'Great match', color: 'bg-teal/90 text-background' }
+    : compat >= 45 ? { label: 'Good match', color: 'bg-primary/90 text-primary-foreground' }
+    : { label: 'New', color: 'bg-white/20 text-white' }
+    : null;
 
   return (
     <div
@@ -35,6 +41,12 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
         </div>
 
         <div className="absolute top-4 right-4 flex flex-col gap-1.5 items-end">
+          {compatTier && (
+            <div className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold shadow-lg backdrop-blur-md ${compatTier.color}`}>
+              <Sparkles size={11} />
+              {compat}% · {compatTier.label}
+            </div>
+          )}
           {profile.is_verified && (
             <div className="flex items-center gap-1 bg-gold/90 text-background px-2.5 py-1 rounded-full text-[10px] font-semibold shadow-lg backdrop-blur-md">
               <BadgeCheck size={12} /> Verified
@@ -99,14 +111,24 @@ export default function SwipeCard({ profile, isTop, swipeDirection, onReport, on
 
           {profile.interests?.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-2">
-              {profile.interests?.slice(0, 4).map((interest) => (
-                <span key={interest} className="bg-white/15 backdrop-blur-md text-white px-2.5 py-1 rounded-full text-xs font-medium border border-white/10">
-                  {interest}
-                </span>
-              ))}
-              {profile.interests?.length > 4 && (
+              {profile.interests?.slice(0, 5).map((interest) => {
+                const shared = sharedInterests?.includes(interest);
+                return (
+                  <span
+                    key={interest}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium border ${
+                      shared
+                        ? 'bg-primary text-primary-foreground border-primary shadow-lg'
+                        : 'bg-white/15 backdrop-blur-md text-white border-white/10'
+                    }`}
+                  >
+                    {shared && <Sparkles size={9} className="inline mr-0.5 -mt-0.5" />}{interest}
+                  </span>
+                );
+              })}
+              {profile.interests?.length > 5 && (
                 <span className="bg-white/10 text-white/80 px-2.5 py-1 rounded-full text-xs font-medium">
-                  +{profile.interests.length - 4}
+                  +{profile.interests.length - 5}
                 </span>
               )}
             </div>

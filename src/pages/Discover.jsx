@@ -11,7 +11,7 @@ import { Heart, X, Star, RotateCcw, Sparkles, Search, SlidersHorizontal, Bell, P
 import { Link } from 'react-router-dom';
 import TopPicks from '@/components/TopPicks';
 import PassportModal from '@/components/PassportModal';
-import { sortByCompatibility } from '@/utils/matchmaking';
+import { sortByCompatibility, computeCompatibilityScore } from '@/utils/matchmaking';
 
 export default function Discover() {
   const { profile, setProfile } = useOutletContext();
@@ -53,7 +53,11 @@ export default function Discover() {
           p.is_onboarded
       );
       // Smart matchmaking: sort by compatibility score (shared interests, distance, preferences)
-      setProfiles(sortByCompatibility(filtered, profile));
+      setProfiles(sortByCompatibility(filtered, profile).map((p) => ({
+        ...p,
+        _compatibility: computeCompatibilityScore(p, profile),
+        _sharedInterests: (p.interests || []).filter((i) => (profile.interests || []).includes(i)),
+      })));
     } catch (err) {
       console.error(err);
     }
@@ -225,6 +229,46 @@ export default function Discover() {
     }
   };
 
+  // Re-sort when tab changes — each tab emphasizes a different compatibility dimension
+  const sortedProfiles = (() => {
+    const arr = [...profiles];
+    const now = new Date();
+    if (tab === 'nearby') {
+      arr.sort((a, b) => {
+        const aBoosted = a.boosted_until && new Date(a.boosted_until) > now ? 1 : 0;
+        const bBoosted = b.boosted_until && new Date(b.boosted_until) > now ? 1 : 0;
+        if (aBoosted !== bBoosted) return bBoosted - aBoosted;
+        // Distance: same location string scores highest
+        const viewerLoc = (profile.passport_location || profile.location || '').toLowerCase();
+        const locScore = (p) => {
+          const loc = (p.location || '').toLowerCase();
+          if (!viewerLoc || !loc) return 0;
+          if (viewerLoc === loc) return 3;
+          if (viewerLoc.split(',')[0] === loc.split(',')[0]) return 2;
+          return 1;
+        };
+        return locScore(b) - locScore(a);
+      });
+    } else if (tab === 'age') {
+      arr.sort((a, b) => {
+        const aBoosted = a.boosted_until && new Date(a.boosted_until) > now ? 1 : 0;
+        const bBoosted = b.boosted_until && new Date(b.boosted_until) > now ? 1 : 0;
+        if (aBoosted !== bBoosted) return bBoosted - aBoosted;
+        // Closest to the midpoint of the user's age preference range
+        const mid = ((profile.age_pref_min || 18) + (profile.age_pref_max || 99)) / 2;
+        return Math.abs(a.age - mid) - Math.abs(b.age - mid);
+      });
+    } else if (tab === 'interests') {
+      arr.sort((a, b) => {
+        const aBoosted = a.boosted_until && new Date(a.boosted_until) > now ? 1 : 0;
+        const bBoosted = b.boosted_until && new Date(b.boosted_until) > now ? 1 : 0;
+        if (aBoosted !== bBoosted) return bBoosted - aBoosted;
+        return (b._sharedInterests?.length || 0) - (a._sharedInterests?.length || 0);
+      });
+    }
+    return arr;
+  })();
+
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-8 h-8 border-4 border-secondary border-t-primary rounded-full animate-spin" />
@@ -344,7 +388,7 @@ export default function Discover() {
             </div>
           ) : (
             <div className="relative h-[65vh]">
-              {profiles.slice(0, 2).reverse().map((p, i, arr) => (
+              {sortedProfiles.slice(0, 2).reverse().map((p, i, arr) => (
                 <SwipeCard
                   key={p.id}
                   profile={p}
@@ -352,6 +396,8 @@ export default function Discover() {
                   swipeDirection={i === arr.length - 1 ? swipeDirection : null}
                   onReport={setReportTarget}
                   onBlock={setBlockTarget}
+                  compatibilityScore={p._compatibility}
+                  sharedInterests={p._sharedInterests}
                 />
               ))}
             </div>
