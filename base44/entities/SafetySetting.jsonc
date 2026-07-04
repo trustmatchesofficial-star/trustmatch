@@ -54,6 +54,25 @@
     "daily_digest_enabled": {
       "type": "boolean",
       "default": false
+    },
+    "push_enabled": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has enabled web push notifications."
+    },
+    "push_subscription": {
+      "type": "string",
+      "description": "JSON-stringified PushSubscription object from the browser Push API."
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ],
+      "default": "en",
+      "description": "User's preferred UI language."
     }
   },
   "required": [],
