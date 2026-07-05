@@ -37,6 +37,21 @@ Deno.serve(async (req) => {
     let smsSent = false;
     let smsError = null;
 
+    // Helper: normalize phone to E.164 (ensure leading +)
+    function normalizePhone(phone) {
+      if (!phone) return null;
+      let p = phone.trim().replace(/\s/g, '');
+      if (!p) return null;
+      if (!p.startsWith('+')) {
+        // If starts with 00, replace with +
+        if (p.startsWith('00')) p = '+' + p.slice(2);
+        // If starts with 0 (UK domestic), convert to +44
+        else if (p.startsWith('0')) p = '+44' + p.slice(1);
+        else p = '+' + p;
+      }
+      return p;
+    }
+
     // Helper: send SMS via Twilio
     async function sendSms(to, message) {
       const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
@@ -45,6 +60,7 @@ Deno.serve(async (req) => {
       if (!accountSid || !authToken || !from) {
         throw new Error('Twilio credentials not configured');
       }
+      console.log('Twilio SMS: from=' + from + ' to=' + to + ' sid=' + accountSid.substring(0, 4) + '...');
       const res = await fetch(
         'https://api.twilio.com/2010-04-01/Accounts/' + accountSid + '/Messages.json',
         {
@@ -58,9 +74,9 @@ Deno.serve(async (req) => {
       );
       const resText = await res.text();
       if (!res.ok) {
-        // Twilio returns JSON for .json endpoint, but guard for XML just in case
-        let errMsg = 'Twilio API error (status ' + res.status + ')';
-        try { const d = JSON.parse(resText); if (d.message) errMsg = d.message; } catch {}
+        console.error('Twilio error response:', res.status, resText);
+        let errMsg = 'Twilio API error (status ' + res.status + '): ' + resText.substring(0, 200);
+        try { const d = JSON.parse(resText); if (d.message) errMsg = d.message + ' (code ' + d.code + ')'; } catch {}
         throw new Error(errMsg);
       }
       try { return JSON.parse(resText); } catch { return { raw: resText }; }
@@ -113,11 +129,13 @@ Deno.serve(async (req) => {
     // 1c) Alert the emergency contact by SMS with location link.
     if (notifyContact && contactPhone) {
       try {
+        const normalizedPhone = normalizePhone(contactPhone);
+        if (!normalizedPhone) throw new Error('Invalid phone number');
         const smsText =
           'TRUST MATCHES SOS: ' + name + ' triggered a safety alert and listed you as their emergency contact. ' +
           (mapsLink ? 'Their location: ' + mapsLink + ' ' : '') +
           'Please reach out to them immediately. If in immediate danger, call 999.';
-        await sendSms(contactPhone, smsText);
+        await sendSms(normalizedPhone, smsText);
         smsSent = true;
       } catch (e) {
         smsError = String(e);
