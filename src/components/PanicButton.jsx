@@ -75,8 +75,13 @@ export default function PanicButton({ profile, variant = 'full' }) {
                   We've alerted your emergency contact and our safety team.
                 </p>
                 {result?.locationShared && (
-                  <p className="flex items-center justify-center gap-1.5 text-teal text-xs font-medium mb-3">
+                  <p className="flex items-center justify-center gap-1.5 text-teal text-xs font-medium mb-2">
                     <MapPin size={13} /> Live location shared with your contact
+                  </p>
+                )}
+                {result?.smsSent && (
+                  <p className="flex items-center justify-center gap-1.5 text-teal text-xs font-medium mb-3">
+                    <Phone size={12} /> SMS sent to your emergency contact
                   </p>
                 )}
                 {result?.showSos && (

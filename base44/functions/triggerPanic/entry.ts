@@ -34,6 +34,37 @@ Deno.serve(async (req) => {
     let emailSent = false;
     let emailError = null;
     let inAppContactNotified = false;
+    let smsSent = false;
+    let smsError = null;
+
+    // Helper: send SMS via Twilio
+    async function sendSms(to, message) {
+      const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID');
+      const authToken = Deno.env.get('TWILIO_AUTH_TOKEN');
+      const from = Deno.env.get('TWILIO_PHONE_NUMBER');
+      if (!accountSid || !authToken || !from) {
+        throw new Error('Twilio credentials not configured');
+      }
+      const res = await fetch(
+        'https://api.twilio.com/2010-04-01/Accounts/' + accountSid + '/Messages.json',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: 'Basic ' + btoa(accountSid + ':' + authToken),
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({ To: to, From: from, Body: message }),
+        }
+      );
+      const resText = await res.text();
+      if (!res.ok) {
+        // Twilio returns JSON for .json endpoint, but guard for XML just in case
+        let errMsg = 'Twilio API error (status ' + res.status + ')';
+        try { const d = JSON.parse(resText); if (d.message) errMsg = d.message; } catch {}
+        throw new Error(errMsg);
+      }
+      try { return JSON.parse(resText); } catch { return { raw: resText }; }
+    }
 
     // 1) Alert the saved emergency contact by email with location link.
     if (notifyContact && contactEmail) {
@@ -79,6 +110,21 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 1c) Alert the emergency contact by SMS with location link.
+    if (notifyContact && contactPhone) {
+      try {
+        const smsText =
+          'TRUST MATCHES SOS: ' + name + ' triggered a safety alert and listed you as their emergency contact. ' +
+          (mapsLink ? 'Their location: ' + mapsLink + ' ' : '') +
+          'Please reach out to them immediately. If in immediate danger, call 999.';
+        await sendSms(contactPhone, smsText);
+        smsSent = true;
+      } catch (e) {
+        smsError = String(e);
+        console.error('SOS SMS error:', smsError);
+      }
+    }
+
     // 2) Escalate to the platform safety team (admins) with contact details + location.
     const contactSummary =
       (contactName ? 'Contact: ' + contactName : '') +
@@ -97,7 +143,7 @@ Deno.serve(async (req) => {
             name + ' triggered a panic alert. Escalation mode: ' + mode + '. ' +
             'Emergency contact: ' + contactSummary + '. ' +
             (mapsLink ? 'Location: ' + mapsLink + '. ' : '') +
-            (notifyContact && contactEmail ? 'Email alert sent.' : 'No email alert sent (no contact email on file).'),
+            'Email: ' + (emailSent ? 'sent' : 'not sent') + '. SMS: ' + (smsSent ? 'sent' : 'not sent') + '.',
           is_read: false,
         });
       }
@@ -107,9 +153,12 @@ Deno.serve(async (req) => {
     let userBody;
     if (notifyContact && contactEmail && emailSent) {
       userBody = 'We alerted your emergency contact' + (contactName ? ' ' + contactName : '') + ' by email' +
+        (smsSent ? ' and SMS' : '') +
         (inAppContactNotified ? ' and in-app' : '') + ' and notified our safety team.';
-    } else if (notifyContact && !contactEmail) {
-      userBody = 'We notified our safety team, but no emergency contact email is saved in your settings — add one so alerts reach them directly.';
+    } else if (notifyContact && !contactEmail && !contactPhone) {
+      userBody = 'We notified our safety team, but no emergency contact email or phone is saved in your settings — add one so alerts reach them directly.';
+    } else if (notifyContact && !contactEmail && contactPhone) {
+      userBody = 'We alerted your emergency contact' + (contactName ? ' ' + contactName : '') + ' by SMS and notified our safety team.';
     } else {
       userBody = 'We notified our safety team.';
     }
@@ -129,9 +178,11 @@ Deno.serve(async (req) => {
       mode,
       showSos,
       emailSent,
+      smsSent,
       contactEmail: !!contactEmail,
       contactPhone: !!contactPhone,
       emailError,
+      smsError,
       locationShared: !!mapsLink,
       inAppContactNotified,
     });
