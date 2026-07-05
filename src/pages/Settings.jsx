@@ -19,6 +19,7 @@ export default function Settings() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [originalUsername, setOriginalUsername] = useState('');
   const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ export default function Settings() {
         const results = await base44.entities.SafetySetting.filter({ created_by_id: profile.created_by_id });
         if (results[0]) {
           setSettings(results[0]);
+          setOriginalUsername(results[0].username || '');
         } else {
           const created = await base44.entities.SafetySetting.create({
             show_distance: true,
@@ -40,6 +42,7 @@ export default function Settings() {
             username: profile.full_name?.toLowerCase().replace(/\s+/g, ''),
           });
           setSettings(created);
+          setOriginalUsername(created.username || '');
         }
       } catch (err) {
         console.error(err);
@@ -55,11 +58,17 @@ export default function Settings() {
     setSaving(true);
     try {
       await base44.entities.SafetySetting.update(settings.id, { [field]: value });
+      if (field === 'username') {
+        setOriginalUsername(value);
+      }
     } catch (err) {
       console.error(err);
     }
     setSaving(false);
   };
+
+  const isUsernameChanged = settings?.username !== originalUsername;
+  const isUsernameTruthy = settings?.username && settings.username.trim().length > 0;
 
   if (loading || !settings) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -228,9 +237,10 @@ export default function Settings() {
                 </div>
                 <button
                   onClick={() => update('username', settings.username)}
-                  className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition"
+                  disabled={!isUsernameTruthy || !isUsernameChanged || saving}
+                  className="px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save
+                  {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>
