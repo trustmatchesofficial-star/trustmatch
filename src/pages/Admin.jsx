@@ -245,7 +245,6 @@ export default function Admin() {
       approved: 'bg-teal/15 text-teal',
       rejected: 'bg-destructive/15 text-destructive',
       removed: 'bg-destructive/15 text-destructive',
-      pending_review: 'bg-gold/20 text-gold',
       flagged_fraud: 'bg-destructive/20 text-destructive',
     };
     return map[status] || 'bg-secondary text-muted-foreground';
@@ -317,10 +316,10 @@ export default function Admin() {
                   <button onClick={() => handleReportAction(report, 'warn')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-accent/15 text-accent-foreground text-sm font-semibold hover:bg-accent/25 transition">
                     <AlertTriangle size={14} /> Warn
                   </button>
-                  <button onClick={() => handleReportAction(report, 'flag')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                  <button onClick={() => handleReportAction(report, 'flag')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-secondary/80 transition">
                     <Clock size={14} /> Flag for Review
                   </button>
-                  <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                  <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-secondary/80 transition">
                     <XCircle size={14} /> Dismiss
                   </button>
                 </div>
@@ -328,7 +327,7 @@ export default function Admin() {
             )}
             {report.status === 'resolved' && (
               <div className="flex flex-wrap gap-2 mt-3">
-                <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:bg-muted transition">
+                <button onClick={() => handleReportAction(report, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:bg-secondary/80 transition">
                   <XCircle size={14} /> Reopen / Dismiss
                 </button>
                 {reportedProfile && (
@@ -403,13 +402,15 @@ export default function Admin() {
           <div className="space-y-3">
             <div className="flex items-center justify-end gap-2">
               {['pending', 'flagged', 'all'].map((m) => (
-                <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m === 'flagged' ? 'Flagged' : m}</button>
+                <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}>
+                  {m}
+                </button>
               ))}
             </div>
             {(filterMode === 'all' ? reports : filterMode === 'flagged' ? reports.filter((r) => r.status === 'reviewing') : reports.filter((r) => r.status === 'pending')).length === 0 ? (
               <div className="text-center py-16">
                 <CheckCircle className="text-muted-foreground mx-auto mb-3" size={36} />
-                <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No reports to review.' : 'No pending reports. All caught up!'}</p>
+                <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No reports to review.' : 'No pending reports. All clear!'}</p>
               </div>
             ) : (
               (filterMode === 'all' ? reports : filterMode === 'flagged' ? reports.filter((r) => r.status === 'reviewing') : reports.filter((r) => r.status === 'pending')).map(renderReport)
@@ -422,13 +423,15 @@ export default function Admin() {
           <div className="space-y-3">
             <div className="flex items-center justify-end gap-2">
               {['pending', 'flagged', 'all'].map((m) => (
-                <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m === 'flagged' ? 'Flagged' : m}</button>
+                <button key={m} onClick={() => setFilterMode(m)} className={`px-3 py-1 rounded-full text-xs font-medium capitalize transition ${filterMode === m ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}>
+                  {m}
+                </button>
               ))}
             </div>
             {getFilteredVerifications().length === 0 ? (
               <div className="text-center py-16">
                 <BadgeCheck className="text-muted-foreground mx-auto mb-3" size={36} />
-                <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No verification requests.' : 'No pending verifications. All caught up!'}</p>
+                <p className="text-muted-foreground">{filterMode === 'flagged' ? 'No items flagged for investigation.' : filterMode === 'all' ? 'No verification requests.' : 'No pending verifications. All clear!'}</p>
               </div>
             ) : (
               getFilteredVerifications().map((req) => {
@@ -529,7 +532,9 @@ export default function Admin() {
                 { key: 'approved', label: 'Approved' },
                 { key: 'all', label: 'All' },
               ].map((m) => (
-                <button key={m.key} onClick={() => setFilterMode(m.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filterMode === m.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-muted-foreground'}`}>{m.label}</button>
+                <button key={m.key} onClick={() => setFilterMode(m.key)} className={`px-3 py-1 rounded-full text-xs font-medium transition ${filterMode === m.key ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'}`}>
+                  {m.label}
+                </button>
               ))}
             </div>
             {(() => {
@@ -588,10 +593,12 @@ export default function Admin() {
                             <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-teal/10 text-teal">Confirmed personal experience</span>
                           )}
                           {alert.subject_photo_url && (
-                            <button onClick={() => setSelectedImage(alert.subject_photo_url)} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition">View subject photo</button>
+                            <button onClick={() => setSelectedImage(alert.subject_photo_url)} className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80 transition">
+                              View photo
+                            </button>
                           )}
                           {alert.evidence_url && (
-                            <a href={alert.evidence_url} target="_blank" rel="noreferrer" className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground hover:text-foreground transition flex items-center gap-1">
+                            <a href={alert.evidence_url} target="_blank" rel="noreferrer" className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-secondary text-muted-foreground hover:bg-secondary/80 transition flex items-center gap-1">
                               <FileText size={10} /> View evidence
                             </a>
                           )}
@@ -632,7 +639,7 @@ export default function Admin() {
                                 <button onClick={() => handleAlertAction(alert, 'request_info')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gold/15 text-gold text-sm font-semibold hover:bg-gold/25 transition">
                                   <AlertTriangle size={14} /> Request More Info
                                 </button>
-                                <button onClick={() => handleAlertAction(alert, 'reject')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-muted transition">
+                                <button onClick={() => handleAlertAction(alert, 'reject')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-secondary/80 transition">
                                   <XCircle size={14} /> Reject
                                 </button>
                               </div>
@@ -641,7 +648,7 @@ export default function Admin() {
                         )}
                         {alert.status === 'approved' && alert.dispute_status !== 'disputed' && (
                           <div className="flex flex-wrap gap-2 mt-3">
-                            <button onClick={() => handleAlertAction(alert, 'remove')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-sm font-medium hover:bg-destructive/20 transition">
+                            <button onClick={() => handleAlertAction(alert, 'remove')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-sm font-semibold hover:bg-destructive/20 transition">
                               <XCircle size={14} /> Remove
                             </button>
                           </div>
@@ -687,7 +694,7 @@ export default function Admin() {
                             {flag.subject_full_name || subjectProfile?.full_name || 'Unknown'}
                             {subjectProfile && <TrustScoreBadge profile={subjectProfile} size="sm" />}
                           </h3>
-                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ${statusBadge(flag.status === 'pending_review' ? 'pending' : flag.status === 'reviewed' ? 'resolved' : 'dismissed')}`}>
+                          <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full shrink-0 ${statusBadge(flag.status === 'pending_review' ? 'pending' : flag.status === 'reviewed' ? 'resolved' : flag.status)}`}>
                             {flag.status}
                           </span>
                         </div>
@@ -746,7 +753,7 @@ export default function Admin() {
                               <button onClick={() => handlePatternFlagAction(flag, 'reviewed')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-teal/15 text-teal text-sm font-medium hover:bg-teal/25 transition">
                                 <CheckCircle size={14} /> Reviewed — No Action
                               </button>
-                              <button onClick={() => handlePatternFlagAction(flag, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-medium hover:bg-muted transition">
+                              <button onClick={() => handlePatternFlagAction(flag, 'dismiss')} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-secondary text-muted-foreground text-sm font-semibold hover:bg-secondary/80 transition">
                                 <XCircle size={14} /> Dismiss
                               </button>
                             </div>
